@@ -1,6 +1,6 @@
 package com.bezman.servlet;
 
-import com.bezman.com.bezman.reference.Reference;
+import com.bezman.reference.Reference;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;

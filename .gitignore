@@ -27,3 +27,5 @@ hs_err_pid*
 # Maven
 log/
 target/
+
+*/src/com/bezman/reference/Reference.java

@@ -61,6 +61,7 @@
       <ul class="nav navbar-nav">
         <li class="active"><a href="/daily">Daily</a></li>
         <li class="role-admin"><a href="/monthlyrecap">Sales Recap</a></li>
+        <li class="role-admin"><a href="/itemrecap">Item Recap</a></li>
         <li class="role-admin"><a href="/itemsettings">Item Settings</a></li>
         <li class="role-admin"><a href="/studentsettings">Student Settings</a></li>
         <li class="role-admin"><a href="/attendance">Attendance</a></li>
