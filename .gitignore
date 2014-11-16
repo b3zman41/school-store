@@ -28,4 +28,4 @@ hs_err_pid*
 log/
 target/
 
-*/src/com/bezman/reference/Reference.java
+/src/com/bezman/reference/*
