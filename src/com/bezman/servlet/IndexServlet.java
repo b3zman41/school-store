@@ -1,6 +1,6 @@
 package com.bezman.servlet;
 
-import com.bezman.com.bezman.reference.Reference;
+import com.bezman.reference.Reference;
 import com.bezman.json.JSON;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.json.simple.JSONObject;
@@ -107,7 +107,7 @@ public class IndexServlet {
 
         try {
             Class.forName("com.mysql.jdbc.Driver").newInstance();
-            connection = DriverManager.getConnection("jdbc:mysql://schoolstore.ctd3tuzmxdd6.us-east-1.rds.amazonaws.com:3306/innodb", "b3zman41", "hippos41");
+            connection = DriverManager.getConnection(Reference.dbLink, Reference.dbUsername, Reference.dbPass);
         } catch (Exception e) {
             e.printStackTrace();
         }

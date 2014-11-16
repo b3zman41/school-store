@@ -1,8 +1,8 @@
 <%--
   Created by IntelliJ IDEA.
   User: Terence
-  Date: 11/11/2014
-  Time: 2:19 PM
+  Date: 11/16/2014
+  Time: 10:13 AM
   To change this template use File | Settings | File Templates.
 --%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
@@ -28,7 +28,6 @@
   <title></title>
 </head>
 <body>
-
 <nav class="navbar navbar-default" role="navigation">
   <div class="container">
     <div class="navbar-header">
@@ -45,10 +44,10 @@
       <ul class="nav navbar-nav">
         <li><a href="/daily">Daily</a></li>
         <li class="role-admin"><a href="/monthlyrecap">Sales Recap</a></li>
-        <li class="role-admin"><a href="/itemrecap">Item Recap</a></li>
+        <li class="role-admin active"><a href="/itemrecap">Item Recap</a></li>
         <li class="role-admin"><a href="/itemsettings">Item Settings</a></li>
         <li class="role-admin"><a href="/studentsettings">Student Settings</a></li>
-        <li class="role-admin active"><a href="/attendance">Attendance</a></li>
+        <li class="role-admin"><a href="/attendance">Attendance</a></li>
       </ul>
 
       <ul class="nav navbar-nav navbar-right">
@@ -118,37 +117,50 @@
   });
 </script>
 
-<div class="container">
+<div class="container" style="margin-bottom: 2%;">
   <div class="row">
+    <div class="col-sm-6">
+      <label class="control-label">Order</label>
+      <select class="form-control" id="asc-desc">
+        <option value="desc">Descending</option>
+        <option value="">Ascending</option>
+      </select>
+    </div>
 
-    <div class="col-sm-4">
+    <div class="col-sm-2">
       <label class="control-label">Month</label>
       <input id="month" placeholder="MM" class="form-control" type="number">
     </div>
 
-    <div class="col-sm-4">
+    <div class="col-sm-2">
       <label class="control-label">Day</label>
       <input id="day" placeholder="DD" class="form-control" type="number">
     </div>
 
-    <div class="col-sm-4">
+    <div class="col-sm-2">
       <label class="control-label">Year</label>
       <input id="year" placeholder="YYYY" class="form-control" type="number">
     </div>
 
   </div>
+</div>
 
-  <table class="table table-bordered table-striped" style="margin-top: 5%;">
-    <thead><th>Names</th><th>Period</th></thead>
+<div class="container">
+  <table class="table table-bordered table-striped">
+    <thead>
+    <th>Name</th>
+    <th style="text-align: center;">Number of Items Sold</th>
+    <th style="text-align: center;">Total Money Made</th>
+    </thead>
 
-    <tbody id="namesTBody">
+    <tbody id="salesTBody">
 
     </tbody>
   </table>
-
 </div>
 
 <script>
+
   <%
   if(request.getAttribute("role") == null || !request.getAttribute("role").equals("admin")){
     out.println("$('.role-admin').remove();");
@@ -163,69 +175,68 @@
     $("#year").val(date.getFullYear());
   }
 
-  function updateData(){
-    var query = "/attendancejson?";
+  function updateData() {
+
+    var query = "/itemrecapjson?";
 
     var month = $("#month").val();
     var day = $("#day").val();
     var year = $("#year").val();
 
-    if(month)
-      query += "month=" + month + "&";
+    if(month || day || year){
+      if(month)
+        query += "month=" + month + "&";
 
-    if(day)
-      query += "day=" + day + "&";
+      if(day)
+        query += "day=" + day + "&";
 
-    if(year)
-      query += "year=" + year + "&";
+      if(year)
+        query += "year=" + year + "&";
+    }
+
+    query += "order=" + $("#asc-desc").val();
 
     console.log(query);
 
-    $.get(query, null, function(data){
-      $(".realPeriodNode").fadeOut(500, function(){$(this).remove()});
-
+    $.get(query , null, function (data) {
       var json = $.parseJSON(data);
+      console.log(json);
+
+      $("#salesTBody td").fadeOut(500, function(){$(this).remove()})
+
       for(var i = 0; i < json.length; i++){
-        var nameString = json[i].toString().split(";")[0];
-        var period = json[i].toString().split(";")[1];
+        var itemNameTD = document.createElement("td");
+        itemNameTD.innerHTML = json[i].itemName;
 
-        var periodTD = document.createElement("td");
-        periodTD.innerHTML = "<h2>" + period + "</h2>";
+        var numOfItemsTD = document.createElement("td");
+        numOfItemsTD.innerHTML = json[i].numOfItems;
+        numOfItemsTD.style.textAlign = "center";
 
-        var namesTD = document.createElement("td");
-
-        var namesTDInnerHTML = "<table class='table table-bordered'>"
-
-        for(var x = 0; x < nameString.toString().split(",").length; x++){
-          if(nameString.toString().split(",")[x])
-            namesTDInnerHTML += "<tr><td>" + nameString.toString().split(",")[x] + "</td></tr>"
-        }
-
-        namesTDInnerHTML += "</table>"
-
-        namesTD.innerHTML = namesTDInnerHTML;
+        var totalCashTD = document.createElement("td");
+        totalCashTD.innerHTML = "$" + json[i].totalCash;
+        totalCashTD.style.textAlign = "center";
 
         var tr = document.createElement("tr");
-        tr.className = "realPeriodNode";
+        tr.appendChild(itemNameTD);
+        tr.appendChild(numOfItemsTD);
+        tr.appendChild(totalCashTD);
 
-        $(tr).append($(namesTD));
-        $(tr).append($(periodTD));
-
-        $("#namesTBody").append($(tr));
+        $("#salesTBody").append($(tr));
       }
     });
   }
 
+  $("#asc-desc").change(updateData);
   $("#month").change(updateData);
   $("#day").change(updateData);
   $("#year").change(updateData);
-  $("#selectOrder").change(updateData);
 
+  $("#month").keyup(updateData);
   $("#day").keyup(updateData);
   $("#year").keyup(updateData);
-  $("#month").keyup(updateData);
 
   setDateToToday();
+
   updateData();
 </script>
 </body>

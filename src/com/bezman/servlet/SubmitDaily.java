@@ -1,6 +1,6 @@
 package com.bezman.servlet;
 
-import com.bezman.com.bezman.reference.Reference;
+import com.bezman.reference.Reference;
 import org.json.simple.JSONObject;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
