@@ -11,21 +11,20 @@
 <html>
 <head>
 
-  <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+  <script src="/resources/jquery-2.1.1.js"></script>
 
   <!-- Latest compiled and minified CSS -->
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css">
 
-  <!-- Optional theme -->
-  <link rel="stylesheet" href="http://bootswatch.com/flatly/bootstrap.css">
+  <link rel="stylesheet" href="/resources/flatly.css">
 
   <!-- Latest compiled and minified JavaScript -->
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.0/js/bootstrap.min.js"></script>
 
   <script src="https://rawgit.com/carhartl/jquery-cookie/master/src/jquery.cookie.js"></script>
 
-  <script src="https://rawgit.com/t4t5/sweetalert/master/lib/sweet-alert.min.js"></script>
-  <link rel="stylesheet" type="text/css" href="https://rawgit.com/t4t5/sweetalert/master/lib/sweet-alert.css">
+  <script src="/resources/sweet-alert.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="/resources/sweet-alert.css">
 
   <style>
     .realSaleNode{
@@ -289,6 +288,14 @@
                   </div>
                 </div>
 
+                <div class="form-group" style="margin-bottom: 15%;">
+                  <label class="control-label col-sm-5" style="text-align: center;">Add all checks</label>
+                  <label class="control-label col-sm-1" style="text-align: right">$</label>
+                  <div class="col-sm-6">
+                    <input id="startChecks" class="form-control"/>
+                  </div>
+                </div>
+
                 <div class="form-group">
                   <label class="control-label col-sm-2">Total</label>
                   <div class="col-sm-4">
@@ -443,6 +450,14 @@
                   </div>
                 </div>
 
+                <div class="form-group" style="margin-bottom: 15%;">
+                  <label class="control-label col-sm-5" style="text-align: center;">Add all checks</label>
+                  <label class="control-label col-sm-1" style="text-align: right">$</label>
+                  <div class="col-sm-6">
+                    <input id="endChecks" class="form-control"/>
+                  </div>
+                </div>
+
                 <div class="form-group">
                   <label class="control-label col-sm-2">Total</label>
                   <div class="col-sm-4">
@@ -564,8 +579,11 @@
     var endDimes = valueFromInput($("#endDimesValue"));
     var endQuarters = valueFromInput($("#endQuartersValue"));
 
-    var startSum = startOnes + startFives + startTens + startTwenties + startPennies + startNickels + startDimes + startQuarters;
-    var endSum = endOnes + endFives + endTens + endTwenties + endPennies + endNickels + endDimes + endQuarters;
+    var startChecks = valueFromInput($("#startChecks"));
+    var endChecks = valueFromInput($("#endChecks"));
+
+    var startSum = startOnes + startFives + startTens + startTwenties + startPennies + startNickels + startDimes + startQuarters + startChecks;
+    var endSum = endOnes + endFives + endTens + endTwenties + endPennies + endNickels + endDimes + endQuarters + endChecks;
 
     var names = "";
 
@@ -579,8 +597,8 @@
 
     var period = $("#periodInput").val();
 
-    params += "startOnes=" + startOnes + "&startFives=" + startFives + "&startTens=" + startTens + "&startTwenties=" + startTwenties + "&startPennies=" + startPennies + "&startNickels=" + startNickels + "&startDimes=" + startDimes + "&startQuarters=" + startQuarters + "&";
-    params += "endOnes=" + endOnes + "&endFives=" + endFives + "&endTens=" + endTens + "&endTwenties=" + endTwenties + "&endPennies=" + endPennies + "&endNickels=" + endNickels + "&endDimes=" + endDimes + "&endQuarters=" + endQuarters + "&";
+    params += "startOnes=" + startOnes + "&startFives=" + startFives + "&startTens=" + startTens + "&startTwenties=" + startTwenties + "&startPennies=" + startPennies + "&startNickels=" + startNickels + "&startDimes=" + startDimes + "&startQuarters=" + startQuarters + "&startChecks=" + startChecks + "&";
+    params += "endOnes=" + endOnes + "&endFives=" + endFives + "&endTens=" + endTens + "&endTwenties=" + endTwenties + "&endPennies=" + endPennies + "&endNickels=" + endNickels + "&endDimes=" + endDimes + "&endQuarters=" + endQuarters + "&endChecks=" + endChecks + "&";
 
     params += "startSum=" + startSum.toFixed(2) + "&endSum=" + endSum.toFixed(2) + "&";
 
@@ -608,13 +626,19 @@
     if(endSum < startSum) {
       sweetAlert("Error", "You have less money than you started with! Please revise the form.", "error");
     }else if((startSum + totalSalesCash).toFixed(2) !== endSum.toFixed(2)) {
-      sweetAlert("Error", "Your sales do not add up to then ending sum! Please revise the form.", "error");
+      sweetAlert("Error", "Your sales do not add up to the ending sum! Please revise the form.", "error");
     }else if(startSum > 0 & endSum > 0 && names !== "" && period) {
       $.get(url, null, function (data) {
         var json = $.parseJSON(data);
 
         if (json.success === "true")
-          sweetAlert("Good Job!", "You've entered the whole form correctly.", "success");
+          sweetAlert({
+            title: "Good Job!",
+            text: "You entered the whole form correctly!",
+            type: "success"
+          }, function(){
+            window.location = ("http://ss.bezcode.com");
+          });
 
         console.log(json);
       });
@@ -643,9 +667,10 @@
   $("#templateSale").parent().append(getSaleNode());
 
   function valueFromInput(elem){
-    if(isNaN(parseFloat($(elem).val())))
+    if(isNaN(parseFloat($(elem).val()))) {
+      $(elem).val("");
       return 0;
-    else return parseFloat($(elem).val());
+    }else return parseFloat($(elem).val());
   }
 
   function updateSales(){
@@ -664,6 +689,21 @@
       var numOfItems = parseFloat($($(this).find("#numOfItems")[0]).val());
       var priceOfItem = parseFloat($($(this).find("#priceOfItem")[0]).val());
       var itemToBuy = $($(this).find("#itemSelect")[0]).val();
+
+      var numOfItemsString = $(this).find("#numOfItems").val();
+      var priceOfItemString = $(this).find("#priceOfItem").val();
+
+      for(var i = 0; i < numOfItemsString.length; i++){
+        if(numOfItemsString.charAt(i) !== '.' && isNaN(parseFloat(numOfItemsString.charAt(i)))){
+          $(this).find("#numOfItems").val("");
+        }
+      }
+
+      for(var i = 0; i < priceOfItemString.length; i++){
+        if(priceOfItemString.charAt(i) !== '.' && isNaN(parseFloat(priceOfItemString.charAt(i)))){
+          $(this).find("#priceOfItem").val("");
+        }
+      }
 
       if(!isNaN(numOfItems) && !isNaN(priceOfItem) && itemToBuy !== ""){
         $($(this).find("#totalCost")[0]).val((numOfItems * priceOfItem).toFixed(2));
@@ -718,10 +758,19 @@
         }
       }
 
+      if(isNaN(parseFloat($(parentInput).val()))){
+        $(this).val("");
+      }
+
       if(amountOfBills && multiplier) {
         $(this).val((amountOfBills * multiplier).toFixed(2));
-      }else $(this).attr("placeholder", "-");
+      }else {
+        $(this).attr("placeholder", "-");
+      }
     });
+
+    startTotalCountValue += valueFromInput("#startChecks");
+    endTotalCountValue += valueFromInput("#endChecks");
 
     //Starting Count of bills
     var startOnesCount = valueFromInput($("#startOnes"));
@@ -801,10 +850,10 @@
   function updateNames() {
     console.log("Updating names");
 
-    if ($("#periodInput").val() !== lastPeriod) {
+    if (valueFromInput("#periodInput") !== lastPeriod) {
 
       lastPeriod = $("#periodInput").val();
-      $.get("/getstudents", {period: $("#periodInput").val()}, function (data) {
+      $.get("/getstudents", {period: valueFromInput("#periodInput")}, function (data) {
         var json = $.parseJSON(data);
         console.log(data);
 
@@ -833,7 +882,6 @@
     $(".form-control").change(inputChanged);
     $(".form-control").keyup(inputChanged);
 
-    $("#periodInput").change(updateNames);
     $("#periodInput").keyup(updateNames);
     $("#periodInput").scroll(updateNames);
   });

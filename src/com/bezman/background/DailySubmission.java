@@ -35,6 +35,9 @@ public class DailySubmission {
     public double startSum = 0;
     public double endSum = 0;
 
+    public double startChecks = 0;
+    public double endChecks = 0;
+
     public String[] names;
     public int period;
 
@@ -42,7 +45,7 @@ public class DailySubmission {
 
     public ArrayList<Sale> sales = new ArrayList<>();
 
-    public DailySubmission(double startOnes, double startFives, double startTens, double startTwenties, double startPennies, double startNickels, double startDimes, double startQuarters, double endOnes, double endFives, double endTens, double endTwenties, double endPennies, double endNickels, double endDimes, double endQuarters, double startSum, double endSum, String names, int period, String sales, Timestamp date) {
+    public DailySubmission(double startOnes, double startFives, double startTens, double startTwenties, double startPennies, double startNickels, double startDimes, double startQuarters, double endOnes, double endFives, double endTens, double endTwenties, double endPennies, double endNickels, double endDimes, double endQuarters, double startSum, double endSum, String names, int period, String sales, Timestamp date, double startChecks, double endChecks) {
         this.startOnes = startOnes;
         this.startFives = startFives;
         this.startTens = startTens;
@@ -64,6 +67,9 @@ public class DailySubmission {
         this.names = names.split(",");
         this.period = period;
         this.date = date;
+
+        this.startChecks = startChecks;
+        this.endChecks = endChecks;
 
         String[] salesArray = sales.split(",");
 
@@ -100,6 +106,9 @@ public class DailySubmission {
         double startSum = resultSet.getDouble("startSum");
         double endSum = resultSet.getDouble("endSum");
 
+        double startChecks = resultSet.getDouble("startChecks");
+        double endChecks = resultSet.getDouble("endChecks");
+
         int period = resultSet.getInt("period");
         String names = resultSet.getString("names");
 
@@ -112,7 +121,7 @@ public class DailySubmission {
             sales += salesSet.getString("sale") + ",";
         }
 
-        return new DailySubmission(startOnes, startFives, startTens, startTwenties, startPennies, startNickels, startDimes, startQuarters, endOnes, endFives, endTens, endTwenties, endPennies, endNickels, endDimes, endQuarters, startSum, endSum, names, period, sales, date);
+        return new DailySubmission(startOnes, startFives, startTens, startTwenties, startPennies, startNickels, startDimes, startQuarters, endOnes, endFives, endTens, endTwenties, endPennies, endNickels, endDimes, endQuarters, startSum, endSum, names, period, sales, date, startChecks, endChecks);
     }
 
     public JSONObject toJson(){
@@ -138,6 +147,9 @@ public class DailySubmission {
 
         jsonObject.put("startSum", startSum);
         jsonObject.put("endSum", endSum);
+
+        jsonObject.put("startChecks", startChecks);
+        jsonObject.put("endChecks", endChecks);
 
         jsonObject.put("period", period);
 

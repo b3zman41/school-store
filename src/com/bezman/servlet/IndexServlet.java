@@ -123,6 +123,13 @@ public class IndexServlet {
 
     @PreDestroy
     public void preDestroy(){
+
+        try {
+            this.connection.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
         JSONObject jsonObject = new JSONObject();
 
         jsonObject.put("message", Reference.motd);

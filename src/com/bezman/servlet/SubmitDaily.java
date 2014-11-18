@@ -1,14 +1,18 @@
 package com.bezman.servlet;
 
-import com.bezman.reference.Reference;
 import org.json.simple.JSONObject;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.Calendar;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.stream.Collectors;
 
 /**
@@ -28,7 +32,8 @@ public class SubmitDaily {
         String sales = (String) allParams.get("sale");
         allParams.remove("sale");
 
-        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+        Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("America/New_York"));
+        Timestamp timestamp = new Timestamp(calendar.getTime().getTime());
 
         String columnsNames = (String) allParams.keySet().stream().collect(Collectors.joining(", "));
         query += columnsNames;
@@ -51,8 +56,6 @@ public class SubmitDaily {
             jsonObject.put("success", "false");
             e.printStackTrace();
         }
-
-        System.out.println("SUBMISSION WAS ENTERED :" + Reference.randomCounter++);
 
         return jsonObject.toJSONString();
     }

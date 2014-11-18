@@ -9,21 +9,20 @@
 <html>
 <head>
 
-  <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+  <script src="/resources/jquery-2.1.1.js"></script>
 
   <!-- Latest compiled and minified CSS -->
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css">
 
-  <!-- Optional theme -->
-  <link rel="stylesheet" href="http://bootswatch.com/flatly/bootstrap.css">
+  <link rel="stylesheet" href="/resources/flatly.css">
 
   <!-- Latest compiled and minified JavaScript -->
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.0/js/bootstrap.min.js"></script>
 
   <script src="https://rawgit.com/carhartl/jquery-cookie/master/src/jquery.cookie.js"></script>
 
-  <script src="https://rawgit.com/t4t5/sweetalert/master/lib/sweet-alert.min.js"></script>
-  <link rel="stylesheet" type="text/css" href="https://rawgit.com/t4t5/sweetalert/master/lib/sweet-alert.css">
+  <script src="/resources/sweet-alert.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="/resources/sweet-alert.css">
 
   <title></title>
 </head>
@@ -226,10 +225,23 @@
 
       if(json.success === "true"){
         sweetAlert({
-          title: "Good Job!",
-          text: "You deleted the entry!",
-          type: "success"
-        }, function(){location.reload()});
+          title: "Are you sure?",
+          text: "You will be deleting this entry.",
+          type: "warning",
+
+          closeOnConfirm: false,
+          showCancelButton: true
+        }, function (isConfirm) {
+          if(isConfirm) {
+            sweetAlert({
+              title: "Good Job!",
+              text: "You deleted the entry!",
+              type: "success"
+            }, function () {
+              location.reload()
+            });
+          }
+        });
       }else{
         sweetAlert({
           title: "Error",

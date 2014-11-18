@@ -14,6 +14,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.stream.Collectors;
@@ -87,6 +88,8 @@ public class ItemRecapServlet {
                 String sale = resultSet.getString("sale");
                 String[] saleSplit = sale.split(";");
 
+                Timestamp timestamp = resultSet.getTimestamp("date");
+
                 if (saleSplit.length == 3){
                     String itemName = saleSplit[0];
                     Integer numOfItems = Integer.valueOf(saleSplit[1]);
@@ -96,6 +99,7 @@ public class ItemRecapServlet {
 
                     if (itemName != null && numOfItems != null && priceOfItem != null) {
                         ItemSale itemSale = new ItemSale(itemName, numOfItems);
+                        itemSale.setDate(timestamp);
 
                         boolean foundOne = false;
 
@@ -126,6 +130,7 @@ public class ItemRecapServlet {
                 jsonObject.put("itemName", item.itemName);
                 jsonObject.put("numOfItems", item.numOfItems);
                 jsonObject.put("totalCash", item.totalCash);
+                jsonObject.put("date", item.timestamp.getTime());
 
                 jsonArray.add(jsonObject);;
             }

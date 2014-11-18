@@ -9,23 +9,28 @@
 <html>
 <head>
 
-  <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+  <script src="/resources/jquery-2.1.1.js"></script>
 
   <!-- Latest compiled and minified CSS -->
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css">
 
-  <!-- Optional theme -->
-  <link rel="stylesheet" href="http://bootswatch.com/flatly/bootstrap.css">
+  <link rel="stylesheet" href="/resources/flatly.css">
 
   <!-- Latest compiled and minified JavaScript -->
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.0/js/bootstrap.min.js"></script>
 
   <script src="https://rawgit.com/carhartl/jquery-cookie/master/src/jquery.cookie.js"></script>
 
-  <script src="https://rawgit.com/t4t5/sweetalert/master/lib/sweet-alert.min.js"></script>
-  <link rel="stylesheet" type="text/css" href="https://rawgit.com/t4t5/sweetalert/master/lib/sweet-alert.css">
+  <script src="/resources/sweet-alert.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="/resources/sweet-alert.css">
 
   <title></title>
+
+  <style media="print">
+      #dateParams{
+        display: none;
+      }
+  </style>
 </head>
 <body>
 <nav class="navbar navbar-default" role="navigation">
@@ -118,7 +123,7 @@
 </script>
 
 <div class="container" style="margin-bottom: 2%;">
-  <div class="row">
+  <div id="dateParams" class="row">
     <div class="col-sm-6">
       <label class="control-label">Order</label>
       <select class="form-control" id="asc-desc">
@@ -143,6 +148,11 @@
     </div>
 
   </div>
+  <div class="row">
+    <div class="col-sm-4"></div>
+    <div class="col-sm-4"><h2><span id="dateSpanLabel" class="label label-default"></span></h2></div>
+    <div class="col-sm-4"></div>
+  </div>
 </div>
 
 <div class="container">
@@ -155,6 +165,20 @@
 
     <tbody id="salesTBody">
 
+    </tbody>
+  </table>
+
+  <table class="table table-bordered table-striped">
+    <thead>
+    <th style="text-align: center">Total Items Sold</th>
+    <th style="text-align: center">Total Cash Made</th>
+    </thead>
+
+    <tbody>
+    <tr>
+      <td style="text-align: center" id="totalItemsCount"></td>
+      <td style="text-align: center" id="totalCashCount"></td>
+    </tr>
     </tbody>
   </table>
 </div>
@@ -171,7 +195,6 @@
     var date = new Date();
 
     $("#month").val(date.getMonth() + 1);
-    $("#day").val(date.getDate());
     $("#year").val(date.getFullYear());
   }
 
@@ -204,6 +227,12 @@
 
       $("#salesTBody td").fadeOut(500, function(){$(this).remove()})
 
+      var oldest;
+      var newest;
+
+      var itemsSum = 0;
+      var totalCash = 0.0;
+
       for(var i = 0; i < json.length; i++){
         var itemNameTD = document.createElement("td");
         itemNameTD.innerHTML = json[i].itemName;
@@ -222,7 +251,26 @@
         tr.appendChild(totalCashTD);
 
         $("#salesTBody").append($(tr));
+
+        itemsSum += json[i].numOfItems;
+        totalCash += parseFloat(json[i].totalCash);
+
+        if(!oldest && !newest)
+          oldest = newest = json[i].date;
+
+        if(json[i].date < oldest)
+          oldest = json[i].date;
+        else if(json[i] > newest)
+          newest = json[i].date;
       }
+
+      var oldestDate = new Date(oldest);
+      var newestDate = new Date(newest);
+
+      $("#totalItemsCount").html(itemsSum);
+      $("#totalCashCount").html("$"+ totalCash);
+
+      $("#dateSpanLabel").html(oldestDate.toDateString() + " - " + newestDate.toDateString());
     });
   }
 

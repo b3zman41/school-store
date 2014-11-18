@@ -9,21 +9,20 @@
 <html>
 <head>
 
-  <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+  <script src="/resources/jquery-2.1.1.js"></script>
 
   <!-- Latest compiled and minified CSS -->
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css">
 
-  <!-- Optional theme -->
-  <link rel="stylesheet" href="http://bootswatch.com/flatly/bootstrap.css">
+  <link rel="stylesheet" href="/resources/flatly.css">
 
   <!-- Latest compiled and minified JavaScript -->
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.0/js/bootstrap.min.js"></script>
 
   <script src="https://rawgit.com/carhartl/jquery-cookie/master/src/jquery.cookie.js"></script>
 
-  <script src="https://rawgit.com/t4t5/sweetalert/master/lib/sweet-alert.min.js"></script>
-  <link rel="stylesheet" type="text/css" href="https://rawgit.com/t4t5/sweetalert/master/lib/sweet-alert.css">
+  <script src="/resources/sweet-alert.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="/resources/sweet-alert.css">
 
   <title></title>
 </head>
@@ -122,7 +121,7 @@
     <div class="modal-content modal-sm">
       <div class="modal-header">
         Edit Name of Item
-    </div>
+      </div>
 
       <div class="modal-body">
         <label class="control-label">Item Name</label>
@@ -237,26 +236,31 @@
 
             confirmButtonText: "Confirm",
 
+            closeOnConfirm: false,
             showCancelButton: true
-          }, function(){
-            $.get("/deleteitem?name=" + itemClicked, null, function(data){
-              var json = $.parseJSON(data);
+          }, function(isConfirm){
+            if(isConfirm) {
+              $.get("/deleteitem?name=" + itemClicked, null, function (data) {
+                var json = $.parseJSON(data);
 
-              if(json.success === "true"){
-                sweetAlert({
-                  title: "Item Deletion",
-                  text: "The Item : " + itemClicked + " was deleted from the database.",
-                  type: "success"
-                })
-              }else{
-                sweetAlert({
-                  title: "Item Deletion",
-                  text: "The Item : " + itemClicked + " could not be deleted from the database.",
-                  type: "error"
-                })
-              }
+                if (json.success === "true") {
+                  sweetAlert({
+                    title: "Item Deletion",
+                    text: "The Item : " + itemClicked + " was deleted from the database.",
+                    type: "success"
+                  }, function () {
+                    location.reload();
+                  })
+                } else {
+                  sweetAlert({
+                    title: "Item Deletion",
+                    text: "The Item : " + itemClicked + " could not be deleted from the database.",
+                    type: "error"
+                  })
+                }
 
-            })
+              })
+            }
           });
         });
 
