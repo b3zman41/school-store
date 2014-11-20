@@ -14,7 +14,7 @@
   <!-- Latest compiled and minified CSS -->
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css">
 
-  <link rel="stylesheet" href="/resources/flatly.css">
+  <link rel="stylesheet" href="http://bootswatch.com/flatly/bootstrap.min.css">
 
   <!-- Latest compiled and minified JavaScript -->
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.0/js/bootstrap.min.js"></script>
@@ -288,7 +288,7 @@
       itemTD.innerHTML = json.sales[sale].itemName;
 
       var priceOfItemTD = document.createElement("td");
-      priceOfItemTD.innerHTML = json.sales[sale].priceOfItem;
+      priceOfItemTD.innerHTML = "$" + json.sales[sale].priceOfItem.toFixed(2);
 
       var numOfItemTD = document.createElement("td");
       numOfItemTD.innerHTML = json.sales[sale].numOfItems;
@@ -297,8 +297,8 @@
       totalPriceOfItemTD.innerHTML = "$" + (parseFloat(json.sales[sale].numOfItems) * parseFloat(json.sales[sale].priceOfItem)).toFixed(2);
 
       tr.appendChild(itemTD);
-      tr.appendChild(numOfItemTD);
       tr.appendChild(priceOfItemTD);
+      tr.appendChild(numOfItemTD);
       tr.appendChild(totalPriceOfItemTD);
 
       $(clone).find("#itemDescBody").append($(tr));

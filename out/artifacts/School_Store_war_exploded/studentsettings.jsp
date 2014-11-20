@@ -8,12 +8,13 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <html>
 <head>
+
   <script src="/resources/jquery-2.1.1.js"></script>
 
   <!-- Latest compiled and minified CSS -->
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css">
 
-  <link rel="stylesheet" href="/resources/flatly.css">
+  <link rel="stylesheet" href="http://bootswatch.com/flatly/bootstrap.min.css">
 
   <!-- Latest compiled and minified JavaScript -->
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.0/js/bootstrap.min.js"></script>
@@ -22,6 +23,7 @@
 
   <script src="/resources/sweet-alert.min.js"></script>
   <link rel="stylesheet" type="text/css" href="/resources/sweet-alert.css">
+
   <title></title>
 </head>
 <body>
@@ -174,7 +176,7 @@
   </div>
 
   <table class="table table-bordered table-striped">
-    <thead><th>Name</th><th>Period</th></th><th>Action</th></thead>
+    <thead><th>Name</th><th style="text-align: center">Period</th></th><th style="text-align: center">Action</th></thead>
     <tbody id="studentsTBody">
 
     </tbody>

@@ -16,7 +16,7 @@
   <!-- Latest compiled and minified CSS -->
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css">
 
-  <link rel="stylesheet" href="/resources/flatly.css">
+  <link rel="stylesheet" href="http://bootswatch.com/flatly/bootstrap.min.css">
 
   <!-- Latest compiled and minified JavaScript -->
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.0/js/bootstrap.min.js"></script>
@@ -143,12 +143,13 @@
         <label class="control-label">Attendance (Check box next to name if person is present)</label>
         <table class="table table-bordered table-striped">
           <thead><th>Name</th></thead>
-          <tbody id="namesTBody"></tbody>
+          <tbody id="namesTBody">
+          </tbody>
         </table>
       </div>
 
       <div class="jumbotron">
-        <div class="container" style="margin-top: 5%;">
+        <div class="container" style="margin-top: 1%;">
           <table class="table table-striped table-bordered">
             <tbody>
             <td>
@@ -487,13 +488,13 @@
           </select>
 
           <script>
-            var itemNames = "${itemNames}";
+            var itemNamesJSON = $.parseJSON('${itemNames}');
 
-            for(var i = 0; i < itemNames.split(",").length; i++){
+            for(var i = 0; i < itemNamesJSON.length; i++){
               var option = document.createElement("option");
 
-              $(option).attr("value", itemNames.split(",")[i]);
-              $(option).html(itemNames.split(",")[i]);
+              $(option).attr("value", itemNamesJSON[i].toString());
+              $(option).html(itemNamesJSON[i].itemName);
 
               $("#itemSelect").append($(option));
             }
@@ -506,13 +507,13 @@
           <input id="numOfItems" class="form-control">
         </div>
 
-        <label class="control-label col-sm-2">Price of Item: $</label>
+        <label class="control-label col-sm-2">Price of Item</label>
 
         <div class="col-sm-1">
-          <input id="priceOfItem" class="form-control">
+          <input id="priceOfItem" class="form-control" contenteditable="false">
         </div>
 
-        <label class="control-label col-sm-2">Total Cost: $</label>
+        <label class="control-label col-sm-2">Total Cost</label>
 
         <div class="col-sm-1">
           <input id="totalCost" class="form-control" contenteditable="false">
@@ -541,8 +542,6 @@
       <button id="submitButton" class="btn btn-primary" style="width: 100%; margin-bottom: 5%;" type="button"><h2>Submit</h2></button>
     </div>
   </form>
-
-</div>
 
 </div>
 
@@ -607,12 +606,12 @@
     var saleCount = 0;
     var totalSalesCash = 0;
     $(".realSaleNode").each(function(){
-      var item = $(this).find("#itemSelect").val();
+      var item = $(this).find("#itemSelect option:selected").text();
       var numOfItems = $(this).find("#numOfItems").val();
-      var priceOfItem = $(this).find("#priceOfItem").val();
+      var priceOfItem = $(this).find("#priceOfItem").val().replace("$", "");
 
       if(item !== "" && !isNaN(numOfItems) && !isNaN(priceOfItem)) {
-        params += $(this).find("#itemSelect").val() + ";" + $(this).find("#numOfItems").val() + ";" + $(this).find("#priceOfItem").val() + ",";
+        params += item + ";" + numOfItems + ";" + priceOfItem + ",";
         totalSalesCash += parseFloat(numOfItems) * parseFloat(priceOfItem);
         saleCount++;
       }
@@ -687,11 +686,11 @@
 
     $(".realSaleNode").each(function(){
       var numOfItems = parseFloat($($(this).find("#numOfItems")[0]).val());
-      var priceOfItem = parseFloat($($(this).find("#priceOfItem")[0]).val());
-      var itemToBuy = $($(this).find("#itemSelect")[0]).val();
+      var itemToBuy = $(this).find("#itemSelect option:selected").text();
+
+      var priceOfItem = 0;
 
       var numOfItemsString = $(this).find("#numOfItems").val();
-      var priceOfItemString = $(this).find("#priceOfItem").val();
 
       for(var i = 0; i < numOfItemsString.length; i++){
         if(numOfItemsString.charAt(i) !== '.' && isNaN(parseFloat(numOfItemsString.charAt(i)))){
@@ -699,14 +698,17 @@
         }
       }
 
-      for(var i = 0; i < priceOfItemString.length; i++){
-        if(priceOfItemString.charAt(i) !== '.' && isNaN(parseFloat(priceOfItemString.charAt(i)))){
-          $(this).find("#priceOfItem").val("");
+      var itemNamesJSON = $.parseJSON('${itemNames}');
+
+      for(var i = 0; i < itemNamesJSON.length; i++){
+        if(itemNamesJSON[i].itemName === itemToBuy){
+          priceOfItem = parseFloat(itemNamesJSON[i].priceOfItem);
+          $(this).find("#priceOfItem").val("$" + priceOfItem.toFixed(2));
         }
       }
 
       if(!isNaN(numOfItems) && !isNaN(priceOfItem) && itemToBuy !== ""){
-        $($(this).find("#totalCost")[0]).val((numOfItems * priceOfItem).toFixed(2));
+        $($(this).find("#totalCost")[0]).val("$" + (numOfItems * priceOfItem).toFixed(2));
 
         var cashMade = numOfItems * priceOfItem;
         totalMoney += cashMade;

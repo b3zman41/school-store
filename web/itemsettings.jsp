@@ -14,7 +14,7 @@
   <!-- Latest compiled and minified CSS -->
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css">
 
-  <link rel="stylesheet" href="/resources/flatly.css">
+  <link rel="stylesheet" href="http://bootswatch.com/flatly/bootstrap.min.css">
 
   <!-- Latest compiled and minified JavaScript -->
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.0/js/bootstrap.min.js"></script>
@@ -27,7 +27,6 @@
   <title></title>
 </head>
 <body>
-
 <nav class="navbar navbar-default" role="navigation">
   <div class="container">
     <div class="navbar-header">
@@ -61,6 +60,7 @@
     </div>
   </div>
 </nav>
+
 <div id="signInModal" class="modal fade" role="dialog">
   <div class="modal-dialog modal-sm">
     <div class="modal-content">
@@ -125,7 +125,10 @@
 
       <div class="modal-body">
         <label class="control-label">Item Name</label>
-        <input id="newItemNameInput" class="form-control" type="text">
+        <input id="newItemNameInput" class="form-control" type="text" style="margin-bottom: 5%;">
+
+        <label class="control-label">Price of Item</label>
+        <input id="newItemPriceInput" type="number" class="form-control">
       </div>
 
       <div class="modal-footer" style="text-align: center">
@@ -146,6 +149,9 @@
       <div class="modal-body">
         <label class="control-label">Item Name</label>
         <input id="addItemNameInput" class="form-control" type="text">
+
+        <label class="control-label">Price of Item</label>
+        <input id="addItemPriceInput" type="number" class="form-control">
       </div>
 
       <div class="modal-footer" style="text-align: center">
@@ -166,30 +172,33 @@
   </div>
 
   <table class="table table-bordered table-striped">
-    <thead><th>Item Name</th><th>Edit</th></thead>
+    <thead>
+    <th>Item Name</th>
+    <th style="text-align: center">Price of Item</th>
+    <th style="text-align: center">Action</th>
+    </thead>
 
     <tbody id="itemsTBody">
 
     </tbody>
 
     <script>
-      var itemNames = "${itemNames}";
-      var itemClicked;
+      var itemNamesJSON = $.parseJSON('${itemNames}');
+      var itemClickedName;
+      var itemClickedPrice;
 
       $("#changeItemNameButton").click(function () {
         var query = "/changeitemname?";
 
         var newItemName = $("#newItemNameInput").val();
+        var newItemPrice = $("#newItemPriceInput").val();
 
-        if(newItemName){
-          if(itemClicked){
-            query += "name=" + newItemName + "&oldName=" + itemClicked;
-            console.log(query);
-
-            $.get(query, null, function(){
+        if(newItemName && newItemPrice){
+          if(itemClickedName && itemClickedPrice){
+            $.get(query, {name: newItemName, oldName: itemClickedName, price: newItemPrice}, function(){
               sweetAlert({
                 title: "Item Changed",
-                text: "You changed the item name for " + itemClicked,
+                text: "You changed the item name for " + itemClickedName,
                 type: "success"
               }, function(){
                 location.reload();
@@ -199,18 +208,23 @@
         }else{
           sweetAlert({
             title: "Error",
-            text: "You did not type anything for the new item name",
+            text: "You did not enter a valid item/name.",
             type: "error"
           });
         }
       });
 
-      for(var i = 0; i < itemNames.split(",").length; i++){
+      for(var i = 0; i < itemNamesJSON.length; i++){
         var tr = document.createElement("tr");
 
         var itemNameTD = document.createElement("td");
-        itemNameTD.innerHTML = "<h4>" + itemNames.split(",")[i] + "</h4>";
-        itemNameTD.className = "itemNameTD col-sm-8";
+        itemNameTD.innerHTML = "<h4>" + itemNamesJSON[i].itemName + "</h4>";
+        itemNameTD.className = "itemNameTD col-sm-4";
+
+        var itemPriceTD = document.createElement("td");
+        itemPriceTD.innerHTML = "<h4>" + "$" + parseFloat(itemNamesJSON[i].priceOfItem).toFixed(2) + "</h4>";
+        itemPriceTD.style.textAlign = "center";
+        itemPriceTD.className = "itemPriceTD col-sm-4";
 
         var editTD = document.createElement("td");
         editTD.className = "col-sm-4"
@@ -226,12 +240,12 @@
         deleteTDButton.className = "btn btn-danger";
 
         $(deleteTDButton).click(function () {
-          itemClicked = $(this).parent().parent().find(".itemNameTD h4").html();
-          console.log(itemClicked);
+          itemClickedName = $(this).parent().parent().find(".itemNameTD h4").html();
+          console.log(itemClickedName);
 
           sweetAlert({
             title: "Confirmation",
-            text: "Are you sure you want to remove : " + itemClicked,
+            text: "Are you sure you want to remove : " + itemClickedName,
             type: "warning",
 
             confirmButtonText: "Confirm",
@@ -240,13 +254,13 @@
             showCancelButton: true
           }, function(isConfirm){
             if(isConfirm) {
-              $.get("/deleteitem?name=" + itemClicked, null, function (data) {
+              $.get("/deleteitem", {name: itemClickedName}, function (data) {
                 var json = $.parseJSON(data);
 
                 if (json.success === "true") {
                   sweetAlert({
                     title: "Item Deletion",
-                    text: "The Item : " + itemClicked + " was deleted from the database.",
+                    text: "The Item : " + itemClickedName + " was deleted from the database.",
                     type: "success"
                   }, function () {
                     location.reload();
@@ -254,7 +268,7 @@
                 } else {
                   sweetAlert({
                     title: "Item Deletion",
-                    text: "The Item : " + itemClicked + " could not be deleted from the database.",
+                    text: "The Item : " + itemClickedName + " could not be deleted from the database.",
                     type: "error"
                   })
                 }
@@ -265,16 +279,19 @@
         });
 
         $(editTDButton).click(function () {
-          itemClicked = $(this).parent().parent().find(".itemNameTD h4").html();
-          console.log(itemClicked);
+          itemClickedName = $(this).parent().parent().find(".itemNameTD h4").html();
+          itemClickedPrice = $(this).parent().parent().find(".itemPriceTD h4").html();
+          console.log(itemClickedPrice)
           $("#editItemModal").modal("show");
-          $("#newItemNameInput").val(itemClicked);
+          $("#newItemNameInput").val(itemClickedName);
+          $("#newItemPriceInput").val(itemClickedPrice.toString().replace("$", ""));
         });
 
         editTD.appendChild(editTDButton);
         editTD.appendChild(deleteTDButton);
 
         tr.appendChild(itemNameTD);
+        tr.appendChild(itemPriceTD);
         tr.appendChild(editTD);
 
         $("#itemsTBody").append($(tr));
@@ -296,9 +313,10 @@
 
   $("#addItemNameInputButton").click(function () {
     var addItemName = $("#addItemNameInput").val();
+    var addItemPrice = $("#addItemPriceInput").val();
 
-    if(addItemName){
-      $.get("/additem?name=" + addItemName, null, function (data) {
+    if(addItemName && addItemPrice){
+      $.get("/additem?name=" + addItemName + "&price=" + addItemPrice, null, function (data) {
         var json = $.parseJSON(data);
 
         if(json.success === "true"){
@@ -320,7 +338,7 @@
     }else{
       sweetAlert({
         title: "Error",
-        text: "You did not enter a new item.",
+        text: "You did not enter a valid item/name.",
         type: "error"
       });
     }

@@ -1,6 +1,7 @@
 package com.bezman.servlet;
 
 import org.apache.commons.lang.StringEscapeUtils;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -11,10 +12,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.stream.Collectors;
 
 /**
  * Created by Terence on 11/11/2014.
@@ -48,31 +48,41 @@ public class ItemSettings {
             }
         }
 
-        ArrayList itemNames = new ArrayList();
+        JSONArray jsonArray = new JSONArray();
 
         try {
             ResultSet itemSet = IndexServlet.execQuery("select * from items");
 
             while(itemSet.next()){
-                itemNames.add(itemSet.getString("name"));
+                JSONObject jsonObject = new JSONObject();
+
+                jsonObject.put("itemName", itemSet.getString("name"));
+                jsonObject.put("priceOfItem", itemSet.getString("price"));
+
+                jsonArray.add(jsonObject);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
 
-        model.addAttribute("itemNames", itemNames.stream().collect(Collectors.joining(",")));
+        model.addAttribute("itemNames", StringEscapeUtils.escapeJavaScript(jsonArray.toJSONString()));
 
         return "itemsettings";
     }
 
     @RequestMapping(value = "/changeitemname", method = {RequestMethod.GET, RequestMethod.POST})
     @ResponseBody
-    public String changeItemName(Model model, HttpServletRequest request, @RequestParam("name") String name, @RequestParam("oldName") String oldName){
+    public String changeItemName(Model model, HttpServletRequest request, @RequestParam("name") String name, @RequestParam("oldName") String oldName, @RequestParam("price") String price){
         JSONObject jsonObject = new JSONObject();
 
         if(IndexServlet.isSessionAdmin(IndexServlet.getCookie(request.getCookies(), "sessionID").getValue())){
             try {
-                IndexServlet.execUpdate("update items set name='" + StringEscapeUtils.escapeHtml(name) + "' where name='" + oldName + "'");
+                PreparedStatement statement = IndexServlet.connection.prepareStatement("update items set name=?,price=? where name=?");
+                statement.setString(1, name);
+                statement.setDouble(2, Double.valueOf(price));
+                statement.setString(3, oldName);
+
+                statement.executeUpdate();
                 jsonObject.put("success", "true");
             } catch (SQLException e) {
                 jsonObject.put("success", "false");
@@ -91,7 +101,10 @@ public class ItemSettings {
 
         if(IndexServlet.isSessionAdmin(IndexServlet.getCookie(request.getCookies(), "sessionID").getValue())){
             try {
-                IndexServlet.execUpdate("delete from items where name='" + name + "'");
+                PreparedStatement statement = IndexServlet.connection.prepareStatement("delete from items where name=?");
+                statement.setString(1, name);
+
+                statement.executeUpdate();
                 jsonObject.put("success", "true");
             } catch (SQLException e) {
                 jsonObject.put("success", "false");
@@ -105,12 +118,17 @@ public class ItemSettings {
 
     @RequestMapping(value = "/additem", method = {RequestMethod.GET, RequestMethod.POST})
     @ResponseBody
-    public String addItem(Model model, HttpServletRequest request, @RequestParam("name") String name){
+    public String addItem(Model model, HttpServletRequest request, @RequestParam("name") String name, @RequestParam("price") String price){
         JSONObject jsonObject = new JSONObject();
 
         if(IndexServlet.isSessionAdmin(IndexServlet.getCookie(request.getCookies(), "sessionID").getValue())){
             try {
-                IndexServlet.execUpdate("insert into items values('" + StringEscapeUtils.escapeHtml(name) + "')");
+                PreparedStatement statement = IndexServlet.connection.prepareStatement("insert into items values(?, ?)");
+                statement.setString(1, StringEscapeUtils.escapeHtml(name));
+                statement.setDouble(2, Double.valueOf(price));
+
+                statement.executeUpdate();
+
                 jsonObject.put("success", "true");
             } catch (SQLException e) {
                 jsonObject.put("success", "false");

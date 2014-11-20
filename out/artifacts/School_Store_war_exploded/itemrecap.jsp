@@ -14,7 +14,7 @@
   <!-- Latest compiled and minified CSS -->
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css">
 
-  <link rel="stylesheet" href="/resources/flatly.css">
+  <link rel="stylesheet" href="http://bootswatch.com/flatly/bootstrap.min.css">
 
   <!-- Latest compiled and minified JavaScript -->
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.0/js/bootstrap.min.js"></script>
@@ -27,9 +27,9 @@
   <title></title>
 
   <style media="print">
-      #dateParams{
-        display: none;
-      }
+    #dateParams{
+      display: none;
+    }
   </style>
 </head>
 <body>

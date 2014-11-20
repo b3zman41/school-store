@@ -1,5 +1,6 @@
 package com.bezman.servlet;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.springframework.stereotype.Controller;
@@ -13,9 +14,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.stream.Collectors;
 
 /**
  * Created by Terence on 11/9/2014.
@@ -46,13 +45,18 @@ public class DailyServlet {
                 }
 
                 ResultSet itemSet = IndexServlet.execQuery("select * from items");
-                ArrayList items = new ArrayList();
+                JSONArray jsonArray = new JSONArray();
 
                 while(itemSet.next()){
-                    items.add(itemSet.getString("name"));
+                    JSONObject jsonObject = new JSONObject();
+
+                    jsonObject.put("itemName", itemSet.getString("name"));
+                    jsonObject.put("priceOfItem", itemSet.getDouble("price"));
+
+                    jsonArray.add(jsonObject);
                 }
 
-                model.addAttribute("itemNames", items.stream().collect(Collectors.joining(",")));
+                model.addAttribute("itemNames", StringEscapeUtils.escapeJavaScript(jsonArray.toJSONString()));
             } catch (SQLException e) {
                 e.printStackTrace();
             }
