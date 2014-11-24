@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Comparator;
@@ -26,40 +26,24 @@ public class DailyServlet {
     @RequestMapping(value = "/daily", method = RequestMethod.GET)
     public String getDaily(Model model, HttpServletRequest request){
 
-        Cookie cookie = IndexServlet.getCookie(request.getCookies(), "sessionID");
-        if (cookie != null){
-            try {
-                ResultSet resultSet = IndexServlet.execQuery("select * from sessions where sessionID='" + cookie.getValue() + "'");
-                String username = null;
+        IndexServlet.servletLoginCheck(model, request);
 
-                while(resultSet.next()){
-                    model.addAttribute("username", resultSet.getString("username"));
-                    username = resultSet.getString("username");
-                }
+        try {
+            ResultSet itemSet = IndexServlet.execQuery("select * from items");
+            JSONArray jsonArray = new JSONArray();
 
-                System.out.println("Username : " + username);
-                ResultSet accountSet = IndexServlet.execQuery("select * from accounts where username='" + username + "'");
+            while (itemSet.next()) {
+                JSONObject jsonObject = new JSONObject();
 
-                while(accountSet.next()){
-                    model.addAttribute("role", accountSet.getString("role"));
-                }
+                jsonObject.put("itemName", itemSet.getString("name"));
+                jsonObject.put("priceOfItem", itemSet.getDouble("price"));
 
-                ResultSet itemSet = IndexServlet.execQuery("select * from items");
-                JSONArray jsonArray = new JSONArray();
-
-                while(itemSet.next()){
-                    JSONObject jsonObject = new JSONObject();
-
-                    jsonObject.put("itemName", itemSet.getString("name"));
-                    jsonObject.put("priceOfItem", itemSet.getDouble("price"));
-
-                    jsonArray.add(jsonObject);
-                }
-
-                model.addAttribute("itemNames", StringEscapeUtils.escapeJavaScript(jsonArray.toJSONString()));
-            } catch (SQLException e) {
-                e.printStackTrace();
+                jsonArray.add(jsonObject);
             }
+
+            model.addAttribute("itemNames", StringEscapeUtils.escapeJavaScript(jsonArray.toJSONString()));
+        }catch (SQLException e){
+            e.printStackTrace();
         }
 
         return "daily";
@@ -72,8 +56,16 @@ public class DailyServlet {
         JSONArray jsonArray = new JSONArray();
 
         try {
-            String query = period == null ? "select * from students" : "select * from students where period='" + period + "' ORDER BY period ASC";
-            ResultSet resultSet = IndexServlet.execQuery(query);
+            PreparedStatement statement;
+
+            if (period == null){
+                statement = IndexServlet.connection.prepareStatement("SELECT * FROM students");
+            }else{
+                statement = IndexServlet.connection.prepareStatement("SELECT * FROM students WHERE period=? ORDER BY period ASC");
+                statement.setString(1, period);
+            }
+
+            ResultSet resultSet = statement.executeQuery();
 
             while(resultSet.next()){
                 JSONObject jsonObject = new JSONObject();

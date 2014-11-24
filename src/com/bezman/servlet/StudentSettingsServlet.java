@@ -9,9 +9,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
-import java.sql.ResultSet;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 /**
@@ -24,27 +23,7 @@ public class StudentSettingsServlet {
     @RequestMapping(value = "/studentsettings", method = {RequestMethod.GET, RequestMethod.POST})
     public String studentSettings(Model model, HttpServletRequest request){
 
-        Cookie cookie = IndexServlet.getCookie(request.getCookies(), "sessionID");
-        if (cookie != null){
-            try {
-                ResultSet resultSet = IndexServlet.execQuery("select * from sessions where sessionID='" + cookie.getValue() + "'");
-                String username = null;
-
-                while(resultSet.next()){
-                    model.addAttribute("username", resultSet.getString("username"));
-                    username = resultSet.getString("username");
-                }
-
-                System.out.println("Username : " + username);
-                ResultSet accountSet = IndexServlet.execQuery("select * from accounts where username='" + username + "'");
-
-                while(accountSet.next()){
-                    model.addAttribute("role", accountSet.getString("role"));
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
+        IndexServlet.servletLoginCheck(model, request);
 
         return "studentsettings";
     }
@@ -56,7 +35,10 @@ public class StudentSettingsServlet {
         JSONObject jsonObject = new JSONObject();
 
         try {
-            IndexServlet.execUpdate("delete from students where name='" + name + "'");
+            PreparedStatement statement = IndexServlet.connection.prepareStatement("DELETE  from students where name=?");
+            statement.setString(1, name);
+
+            statement.executeUpdate();
             jsonObject.put("success", "true");
         } catch (SQLException e) {
             e.printStackTrace();
@@ -73,7 +55,11 @@ public class StudentSettingsServlet {
         JSONObject jsonObject = new JSONObject();
 
         try {
-            IndexServlet.execUpdate("insert into students values('" + StringEscapeUtils.escapeHtml(name) + "', '" + StringEscapeUtils.escapeHtml(period) + "')");
+            PreparedStatement statement = IndexServlet.connection.prepareStatement("insert into students VALUES(?, ?)");
+            statement.setString(1, StringEscapeUtils.escapeHtml(name));
+            statement.setString(2, StringEscapeUtils.escapeHtml(period));
+
+            statement.executeUpdate();
             jsonObject.put("success", "true");
         } catch (SQLException e) {
             e.printStackTrace();
@@ -90,7 +76,13 @@ public class StudentSettingsServlet {
         JSONObject jsonObject = new JSONObject();
 
         try {
-            IndexServlet.execUpdate("update students set name='" + StringEscapeUtils.escapeHtml(newName) + "',period='" + StringEscapeUtils.escapeHtml(newPeriod) + "' where name='" + oldName + "' and period='" + oldPeriod + "'");
+            PreparedStatement statement = IndexServlet.connection.prepareStatement("update students set name=?, period=? where name=? and period=?");
+            statement.setString(1, newName);
+            statement.setString(2, newPeriod);
+            statement.setString(3, oldName);
+            statement.setString(4, oldPeriod);
+
+            statement.executeUpdate();
             jsonObject.put("success", "true");
         } catch (SQLException e) {
             e.printStackTrace();

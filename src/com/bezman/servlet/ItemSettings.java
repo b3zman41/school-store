@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -26,27 +25,7 @@ public class ItemSettings {
     @RequestMapping(value = "/itemsettings", method = {RequestMethod.GET})
     public String ItemSettings(Model model, HttpServletRequest request){
 
-        Cookie cookie = IndexServlet.getCookie(request.getCookies(), "sessionID");
-        if (cookie != null){
-            try {
-                ResultSet resultSet = IndexServlet.execQuery("select * from sessions where sessionID='" + cookie.getValue() + "'");
-                String username = null;
-
-                while(resultSet.next()){
-                    model.addAttribute("username", resultSet.getString("username"));
-                    username = resultSet.getString("username");
-                }
-
-                System.out.println("Username : " + username);
-                ResultSet accountSet = IndexServlet.execQuery("select * from accounts where username='" + username + "'");
-
-                while(accountSet.next()){
-                    model.addAttribute("role", accountSet.getString("role"));
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
+        IndexServlet.servletLoginCheck(model, request);
 
         JSONArray jsonArray = new JSONArray();
 

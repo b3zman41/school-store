@@ -4,6 +4,7 @@ import com.bezman.servlet.IndexServlet;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -116,7 +117,11 @@ public class DailySubmission {
 
         String sales = "";
 
-        ResultSet salesSet = IndexServlet.execQuery("select * from sales where date='" + date + "'");
+        PreparedStatement statement = IndexServlet.connection.prepareStatement("select * from sales where date=?");
+        statement.setTimestamp(1, date);
+
+        ResultSet salesSet = statement.executeQuery();
+
         while(salesSet.next()){
             sales += salesSet.getString("sale") + ",";
         }

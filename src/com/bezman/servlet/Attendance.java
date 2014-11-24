@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -45,7 +45,12 @@ public class Attendance {
         System.out.println(month + "/ " + day + "/ " + year);
 
         try {
-            ResultSet resultSet = IndexServlet.execQuery("select * from daily where MONTH(date)='" + month + "' and DAY(date)='" + day + "' and YEAR(date)='" + year + "' order by period");
+            PreparedStatement statement = IndexServlet.connection.prepareStatement("select * from daily where MONTH(date)=? and DAY(date)=? and YEAR(date)=? order by period");
+            statement.setString(1, month);
+            statement.setString(2, day);
+            statement.setString(3, year);
+
+            ResultSet resultSet = statement.executeQuery();
 
             while(resultSet.next()){
                 jsonArray.add(resultSet.getString("names") + ";" + resultSet.getString("period"));
@@ -61,27 +66,7 @@ public class Attendance {
     @RequestMapping(value = "/attendance", method = {RequestMethod.GET})
     public String getAttendance(Model model, HttpServletRequest request, @RequestParam(value = "month", required = false) String month, @RequestParam(value = "day", required = false) String day, @RequestParam(value = "year", required = false) String year) {
 
-        Cookie cookie = IndexServlet.getCookie(request.getCookies(), "sessionID");
-        if (cookie != null){
-            try {
-                ResultSet resultSet = IndexServlet.execQuery("select * from sessions where sessionID='" + cookie.getValue() + "'");
-                String username = null;
-
-                while(resultSet.next()){
-                    model.addAttribute("username", resultSet.getString("username"));
-                    username = resultSet.getString("username");
-                }
-
-                System.out.println("Username : " + username);
-                ResultSet accountSet = IndexServlet.execQuery("select * from accounts where username='" + username + "'");
-
-                while(accountSet.next()){
-                    model.addAttribute("role", accountSet.getString("role"));
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
+        IndexServlet.servletLoginCheck(model, request);
 
         model.addAttribute("namesJSON", getAttendanceJSON(model, request, month, day, year));
 

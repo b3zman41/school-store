@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Random;
@@ -27,7 +28,11 @@ public class Login {
         JSONObject jsonObject = new JSONObject();
 
         try {
-            ResultSet resultSet = IndexServlet.execQuery("select * from accounts where username='" + username + "' and password='" + password + "'");
+            PreparedStatement statement = IndexServlet.connection.prepareStatement("select * from accounts where username=? and password=?");
+            statement.setString(1, username);
+            statement.setString(2, password);
+
+            ResultSet resultSet = statement.executeQuery();
 
             boolean foundAccount = false;
 
@@ -38,8 +43,16 @@ public class Login {
             if (foundAccount){
                 String sessionID = getRandomSessionID();
 
-                IndexServlet.execUpdate("delete from sessions where username='" + username + "'");
-                IndexServlet.execUpdate("insert into sessions values('" + username + "', '" + sessionID + "')");
+                PreparedStatement deleteSessions = IndexServlet.connection.prepareStatement("DELETE from sessions WHERE username=?");
+                deleteSessions.setString(1, username);
+
+                deleteSessions.executeUpdate();
+
+                PreparedStatement insertSession = IndexServlet.connection.prepareStatement("insert into sessions VALUES(?, ?)");
+                insertSession.setString(1, username);
+                insertSession.setString(2, sessionID);
+
+                insertSession.executeUpdate();
 
                 jsonObject.put("success", sessionID);
                 response.addCookie(new Cookie("sessionID", sessionID));

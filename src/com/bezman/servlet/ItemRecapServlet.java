@@ -10,14 +10,12 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.stream.Collectors;
+import java.util.*;
 
 /**
  * Created by Terence on 11/16/2014.
@@ -29,26 +27,7 @@ public class ItemRecapServlet {
     @RequestMapping(value = "/itemrecap", method = {RequestMethod.GET, RequestMethod.POST})
     public String getItemRecap(Model model, HttpServletRequest request){
 
-        Cookie cookie = IndexServlet.getCookie(request.getCookies(), "sessionID");
-        if (cookie != null){
-            try {
-                ResultSet resultSet = IndexServlet.execQuery("select * from sessions where sessionID='" + cookie.getValue() + "'");
-                String username = null;
-
-                while(resultSet.next()){
-                    model.addAttribute("username", resultSet.getString("username"));
-                    username = resultSet.getString("username");
-                }
-
-                ResultSet accountSet = IndexServlet.execQuery("select * from accounts where username='" + username + "'");
-
-                while(accountSet.next()){
-                    model.addAttribute("role", accountSet.getString("role"));
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
+        IndexServlet.servletLoginCheck(model, request);
 
         return "itemrecap";
     }
@@ -63,26 +42,61 @@ public class ItemRecapServlet {
         ArrayList params = new ArrayList();
         ArrayList<ItemSale> items = new ArrayList<>();
 
-        if (month != null)
-            params.add("MONTH(date)='" + month + "' ");
+        HashMap<Integer, String> valueMap = new HashMap<>();
 
-        if (day != null)
-            params.add("DAY(date)='" + day + "' ");
+        Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("America/New_York"));
 
-        if (year != null)
-            params.add("YEAR(date)='" + year + "' ");
+        int predCount = 1;
+
+        if (month != null) {
+            query += "MONTH(date)=?";
+
+            valueMap.put(predCount, month);
+
+            predCount++;
+        }
+
+        if (day != null) {
+
+            if (predCount > 1)
+                query += " and ";
+
+            query += "DAY(date)=?";
+
+            valueMap.put(predCount, day);
+
+            predCount++;
+        }
+
+        if (year != null) {
+
+            if (predCount > 1)
+                query += " and ";
+
+            query += "YEAR(date)=?";
+
+            valueMap.put(predCount, year);
+
+            predCount++;
+        }
 
         if (month == null && day == null && year == null)
-            query = "select * from sales";
-        else query += params.stream().collect(Collectors.joining(" and "));
-
-        if (order == null)
-            order = "";
+            query = "SELECT * from sales";
 
         System.out.println(query);
 
         try {
-            ResultSet resultSet = IndexServlet.execQuery(query);
+
+            PreparedStatement statement = IndexServlet.connection.prepareStatement(query);
+
+            for(Integer integer : valueMap.keySet()){
+                statement.setString(integer, valueMap.get(integer));
+            }
+
+            System.out.println(statement.toString());
+
+
+            ResultSet resultSet = statement.executeQuery();
 
             while(resultSet.next()){
                 String sale = resultSet.getString("sale");

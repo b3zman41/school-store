@@ -28,26 +28,7 @@ public class IndexServlet {
     @RequestMapping(value = "/",method = RequestMethod.GET)
     public String processWelcome(Model model, HttpServletRequest request){
 
-        Cookie cookie = IndexServlet.getCookie(request.getCookies(), "sessionID");
-        if (cookie != null){
-            try {
-                ResultSet resultSet = IndexServlet.execQuery("select * from sessions where sessionID='" + cookie.getValue() + "'");
-                String username = null;
-
-                while(resultSet.next()){
-                    model.addAttribute("username", resultSet.getString("username"));
-                    username = resultSet.getString("username");
-                }
-
-                ResultSet accountSet = IndexServlet.execQuery("select * from accounts where username='" + username + "'");
-
-                while(accountSet.next()){
-                    model.addAttribute("role", accountSet.getString("role"));
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
+        IndexServlet.servletLoginCheck(model, request);
 
         model.addAttribute("motd", StringEscapeUtils.escapeHtml(Reference.motd).replace("\n", "<br/>"));
 
@@ -74,7 +55,10 @@ public class IndexServlet {
 
     public static boolean isSessionAdmin(String sessionID){
         try {
-            ResultSet resultSet = IndexServlet.execQuery("select * from sessions where sessionID='" + sessionID + "'");
+            PreparedStatement sessionStatement = IndexServlet.connection.prepareStatement("SELECT * from sessions WHERE sessionID=?");
+            sessionStatement.setString(1, sessionID);
+
+            ResultSet resultSet = sessionStatement.executeQuery();
 
             String username = null;
 
@@ -85,7 +69,10 @@ public class IndexServlet {
             if(username == null)
                 return false;
 
-            ResultSet accountsSet = IndexServlet.execQuery("select * from accounts where username='" + username + "'");
+            PreparedStatement roleStatement = IndexServlet.connection.prepareStatement("SELECT  * from accounts where username=?");
+            roleStatement.setString(1, username);
+
+            ResultSet accountsSet = roleStatement.executeQuery();
 
             while(accountsSet.next()){
                 if (accountsSet.getString("role").equals("admin"))
@@ -147,5 +134,34 @@ public class IndexServlet {
         }
 
         return new Cookie("12", "12");
+    }
+
+    public static void servletLoginCheck(Model model, HttpServletRequest request){
+        Cookie cookie = IndexServlet.getCookie(request.getCookies(), "sessionID");
+        if (cookie != null){
+            try {
+                PreparedStatement statement = IndexServlet.connection.prepareStatement("SELECT  * from sessions where sessionID=?");
+                statement.setString(1, cookie.getValue());
+
+                ResultSet resultSet = statement.executeQuery();
+                String username = null;
+
+                while(resultSet.next()){
+                    model.addAttribute("username", resultSet.getString("username"));
+                    username = resultSet.getString("username");
+                }
+
+                PreparedStatement roleStatement = IndexServlet.connection.prepareStatement("SELECT * from accounts where username=?");
+                roleStatement.setString(1, username);
+
+                ResultSet accountSet = roleStatement.executeQuery();
+
+                while(accountSet.next()){
+                    model.addAttribute("role", accountSet.getString("role"));
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

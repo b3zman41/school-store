@@ -12,11 +12,13 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.stream.Collectors;
 
 /**
@@ -28,27 +30,7 @@ public class MonthlyRecapServlet {
 
     @RequestMapping(value = "/monthlyrecap", method = {RequestMethod.GET})
     public String getMonthlyPage(Model model, HttpServletRequest request){
-        Cookie cookie = IndexServlet.getCookie(request.getCookies(), "sessionID");
-        if (cookie != null){
-            try {
-                ResultSet resultSet = IndexServlet.execQuery("select * from sessions where sessionID='" + cookie.getValue() + "'");
-                String username = null;
-
-                while(resultSet.next()){
-                    model.addAttribute("username", resultSet.getString("username"));
-                    username = resultSet.getString("username");
-                }
-
-                System.out.println("Username : " + username);
-                ResultSet accountSet = IndexServlet.execQuery("select * from accounts where username='" + username + "'");
-
-                while(accountSet.next()){
-                    model.addAttribute("role", accountSet.getString("role"));
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
+        IndexServlet.servletLoginCheck(model, request);
 
         return "monthlyrecap";
     }
@@ -61,18 +43,45 @@ public class MonthlyRecapServlet {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(new Date());
 
+        HashMap<Integer, String> valueMap = new HashMap<>();
+
         String query = "select * from daily where ";
 
         ArrayList params = new ArrayList();
 
-        if(month != null)
-            params.add("MONTH(date)='" + month + "' ");
+        int predCount = 1;
 
-        if(day != null)
-            params.add("DAY(date)='" + day + "' ");
+        if (month != null) {
+            query += "MONTH(date)=?";
 
-        if(year != null)
-           params.add("YEAR(date)='" + year +"' ");
+            valueMap.put(predCount, month);
+
+            predCount++;
+        }
+
+        if (day != null) {
+
+            if (predCount > 1)
+                query += " and ";
+
+            query += "DAY(date)=?";
+
+            valueMap.put(predCount, day);
+
+            predCount++;
+        }
+
+        if (year != null) {
+
+            if (predCount > 1)
+                query += " and ";
+
+            query += "YEAR(date)=?";
+
+            valueMap.put(predCount, year);
+
+            predCount++;
+        }
 
         if (month == null && day == null && year == null)
             query = "select * from daily";
@@ -83,17 +92,18 @@ public class MonthlyRecapServlet {
 
         query += (" order by date " + order);
 
-        System.out.println(query);
-
-        ResultSet resultSet = null;
-
         try {
-            resultSet = IndexServlet.execQuery(query);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
 
-        try {
+            PreparedStatement statement = IndexServlet.connection.prepareStatement(query);
+
+            for(Integer integer : valueMap.keySet()){
+                statement.setString(integer, valueMap.get(integer));
+            }
+
+            System.out.println(statement);
+
+            ResultSet resultSet = statement.executeQuery();
+
             while(resultSet.next()){
                 DailySubmission submission = DailySubmission.submissionFromRow(resultSet);
 
@@ -111,8 +121,15 @@ public class MonthlyRecapServlet {
     public String deletePeriodFromDate(@RequestParam("date") String date){
         JSONObject returnJSON = new JSONObject();
         try {
-            IndexServlet.execUpdate("delete from daily where date='" + date + "'");
-            IndexServlet.execUpdate("delete from sales where date='" + date + "'");
+            PreparedStatement deleteDaily = IndexServlet.connection.prepareStatement("DELETE from daily where date=?");
+            deleteDaily.setString(1, date);
+
+            deleteDaily.executeUpdate();
+
+            PreparedStatement deleteSales = IndexServlet.connection.prepareStatement("DELETE from sales where date=?");
+            deleteSales.setString(1, date);
+
+            deleteSales.executeUpdate();
             returnJSON.put("success", "true");
         } catch (SQLException e) {
             e.printStackTrace();
