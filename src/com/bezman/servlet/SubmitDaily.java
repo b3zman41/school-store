@@ -8,6 +8,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -24,7 +27,7 @@ public class SubmitDaily {
 
     @RequestMapping(value = "/dailysubmit", method = {RequestMethod.GET, RequestMethod.POST})
     @ResponseBody
-    public String submit(@RequestParam Map allParams, Model model){
+    public String submit(@RequestParam Map allParams, Model model, HttpServletRequest request, HttpServletResponse response){
         JSONObject jsonObject = new JSONObject();
 
         String sales = (String) allParams.get("sale");
@@ -48,11 +51,21 @@ public class SubmitDaily {
         ArrayList questionMarks = new ArrayList();
         IntStream.range(0, allParams.size()).forEach(a -> questionMarks.add("?"));
 
-        String query = "insert into daily (date, " + columnNames + ") VALUES('" + timestamp + "', " + questionMarks.stream().collect(Collectors.joining(", ")) + ")";
-
-        System.out.println("query : " + query);
+        Cookie schoolCookie = IndexServlet.getCookie(request.getCookies(), "school");
 
         try {
+
+            if (schoolCookie == null) {
+                throw new SQLException("Missing an important cookie!");
+            }
+
+            String school = schoolCookie.getValue();
+
+            String query = "insert into daily (date, school, " + columnNames + ") VALUES('" + timestamp + "','" + school + "', " + questionMarks.stream().collect(Collectors.joining(", ")) + ")";
+
+            System.out.println("query : " + query);
+
+
             PreparedStatement statement = IndexServlet.connection.prepareStatement(query);
 
             for(Integer integer: valueMap.keySet()){
@@ -65,13 +78,16 @@ public class SubmitDaily {
 
             System.out.println(sales);
             for(String currentSale : sales.split(",")) {
-                query = "insert into sales values(?, ?)";
+                if (currentSale != null && !currentSale.equals("")) {
+                    query = "insert into sales values(?, ?, ?)";
 
-                PreparedStatement salesStatement = IndexServlet.connection.prepareStatement(query);
-                salesStatement.setTimestamp(1, timestamp);
-                salesStatement.setString(2, currentSale);
+                    PreparedStatement salesStatement = IndexServlet.connection.prepareStatement(query);
+                    salesStatement.setTimestamp(1, timestamp);
+                    salesStatement.setString(2, currentSale);
+                    salesStatement.setString(3, school);
 
-                salesStatement.executeUpdate();
+                    salesStatement.executeUpdate();
+                }
             }
 
             jsonObject.put("success", "true");

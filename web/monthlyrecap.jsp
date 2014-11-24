@@ -74,6 +74,13 @@
             <label class="control-label"><h4><strong>Password</strong></h4></label>
             <input id="passwordInput" class="form-control" type="password"/>
           </div>
+
+          <div class="form-group" style="padding: 3%">
+            <label class="control-label"><h4><strong>School</strong></h4></label>
+            <select class="form-control" id="schoolSelect">
+              <option></option>
+            </select>
+          </div>
         </form>
       </div>
       <div class="modal-footer" style="text-align: center;">
@@ -93,11 +100,12 @@
   $("#signInConfirmButton").click(function () {
     var username = $("#signInModal").find("#usernameInput").val();
     var password = $("#signInModal").find("#passwordInput").val();
+    var school = $("#signInModal").find("#schoolSelect").val();
 
-    if(!username || !password){
+    if(!username || !password || !school){
       sweetAlert("Sign In Error", "Please fill out the form correctly", "error");
     }else{
-      $.post("/login", {username: username, password: password}, function(data){
+      $.post("/login", {username: username, password: password, school: school}, function(data){
         var json = $.parseJSON(data);
 
         if(json.success === "false"){
@@ -114,6 +122,16 @@
 
     console.log("Username : " + username + ", Password: " + password);
   });
+
+  var allSchools = $.parseJSON('${allSchools}');
+
+  for(var i = 0; i < allSchools.length; i++){
+    var option = document.createElement("option");
+    $(option).html(allSchools[i].toString().toUpperCase());
+    $(option).attr("value", allSchools[i].toString());
+
+    $("#schoolSelect").append($(option));
+  }
 </script>
 
 <div class="container" style="margin-bottom: 2%;">

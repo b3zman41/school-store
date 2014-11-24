@@ -1,8 +1,9 @@
 package com.bezman.servlet;
 
-import com.bezman.reference.Reference;
 import com.bezman.json.JSON;
+import com.bezman.reference.Reference;
 import org.apache.commons.lang.StringEscapeUtils;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -13,6 +14,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.sql.*;
 
 /**
@@ -26,9 +28,9 @@ public class IndexServlet {
     public static Connection connection;
 
     @RequestMapping(value = "/",method = RequestMethod.GET)
-    public String processWelcome(Model model, HttpServletRequest request){
+    public String processWelcome(Model model, HttpServletRequest request, HttpServletResponse response){
 
-        IndexServlet.servletLoginCheck(model, request);
+        IndexServlet.servletLoginCheck(model, request, response);
 
         model.addAttribute("motd", StringEscapeUtils.escapeHtml(Reference.motd).replace("\n", "<br/>"));
 
@@ -88,6 +90,49 @@ public class IndexServlet {
         return false;
     }
 
+    public static String schoolForSessionID(HttpServletRequest request){
+        try {
+            String sessionID = null;
+
+            Cookie sessionIDCookie = getCookie(request.getCookies(), "sessionID");
+
+            if (sessionIDCookie != null) {
+                sessionID = sessionIDCookie.getValue();
+            }
+
+            if (sessionID == null) {
+                return null;
+            }
+
+            PreparedStatement sessionStatement = IndexServlet.connection.prepareStatement("select * FROM sessions where sessionID=?");
+            sessionStatement.setString(1, sessionID);
+
+            String username = null;
+
+            ResultSet resultSet = sessionStatement.executeQuery();
+
+            while(resultSet.next()){
+                username = resultSet.getString("username");
+            }
+
+            if (username != null) {
+                PreparedStatement schoolStatement = IndexServlet.connection.prepareStatement("select * from accounts where username=?");
+                schoolStatement.setString(1, username);
+
+                resultSet = schoolStatement.executeQuery();
+
+                while (resultSet.next()){
+                    if (resultSet.getString("school") != null)
+                        return  resultSet.getString("school");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
     @PostConstruct
     public void startup(){
         System.out.println("THIS IS A STARTUP MESSAGE");
@@ -136,7 +181,7 @@ public class IndexServlet {
         return new Cookie("12", "12");
     }
 
-    public static void servletLoginCheck(Model model, HttpServletRequest request){
+    public static void servletLoginCheck(Model model, HttpServletRequest request, HttpServletResponse response){
         Cookie cookie = IndexServlet.getCookie(request.getCookies(), "sessionID");
         if (cookie != null){
             try {
@@ -158,6 +203,24 @@ public class IndexServlet {
 
                 while(accountSet.next()){
                     model.addAttribute("role", accountSet.getString("role"));
+                }
+
+                String school = schoolForSessionID(request);
+
+                JSONArray schoolArray = new JSONArray();
+
+                PreparedStatement allSchoolsStatement = IndexServlet.connection.prepareStatement("SELECT DISTINCT school FROM accounts");
+                ResultSet allSchools = allSchoolsStatement.executeQuery();
+
+                while(allSchools.next()){
+                    schoolArray.add(allSchools.getString("school"));
+                }
+
+                model.addAttribute("allSchools", StringEscapeUtils.escapeJavaScript(schoolArray.toJSONString()));
+
+                if (school != null) {
+                    model.addAttribute("school", school);
+                    response.addCookie(new Cookie("school", school));
                 }
             } catch (SQLException e) {
                 e.printStackTrace();

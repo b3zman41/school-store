@@ -23,14 +23,15 @@ public class Login {
 
     @RequestMapping(value = "/login", method = {RequestMethod.POST, RequestMethod.GET})
     @ResponseBody
-    public String login(@RequestParam("username") String username, @RequestParam("password") String password, HttpServletResponse response){
+    public String login(@RequestParam("username") String username, @RequestParam("password") String password, @RequestParam("school") String school, HttpServletResponse response){
 
         JSONObject jsonObject = new JSONObject();
 
         try {
-            PreparedStatement statement = IndexServlet.connection.prepareStatement("select * from accounts where username=? and password=?");
+            PreparedStatement statement = IndexServlet.connection.prepareStatement("select * from accounts where username=? and password=? and school=?");
             statement.setString(1, username);
             statement.setString(2, password);
+            statement.setString(3, school);
 
             ResultSet resultSet = statement.executeQuery();
 
@@ -48,9 +49,10 @@ public class Login {
 
                 deleteSessions.executeUpdate();
 
-                PreparedStatement insertSession = IndexServlet.connection.prepareStatement("insert into sessions VALUES(?, ?)");
+                PreparedStatement insertSession = IndexServlet.connection.prepareStatement("insert into sessions VALUES(?, ?, ?)");
                 insertSession.setString(1, username);
                 insertSession.setString(2, sessionID);
+                insertSession.setString(3, school);
 
                 insertSession.executeUpdate();
 

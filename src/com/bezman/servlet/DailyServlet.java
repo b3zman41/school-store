@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -24,9 +25,9 @@ import java.util.Comparator;
 public class DailyServlet {
 
     @RequestMapping(value = "/daily", method = RequestMethod.GET)
-    public String getDaily(Model model, HttpServletRequest request){
+    public String getDaily(Model model, HttpServletRequest request, HttpServletResponse response){
 
-        IndexServlet.servletLoginCheck(model, request);
+        IndexServlet.servletLoginCheck(model, request, response);
 
         try {
             ResultSet itemSet = IndexServlet.execQuery("select * from items");

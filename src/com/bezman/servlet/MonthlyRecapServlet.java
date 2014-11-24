@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -29,21 +30,27 @@ import java.util.stream.Collectors;
 public class MonthlyRecapServlet {
 
     @RequestMapping(value = "/monthlyrecap", method = {RequestMethod.GET})
-    public String getMonthlyPage(Model model, HttpServletRequest request){
-        IndexServlet.servletLoginCheck(model, request);
+    public String getMonthlyPage(Model model, HttpServletRequest request, HttpServletResponse response){
+        IndexServlet.servletLoginCheck(model, request, response);
 
         return "monthlyrecap";
     }
 
     @RequestMapping(value = "/monthlyrecapjson", method = {RequestMethod.GET, RequestMethod.POST})
     @ResponseBody
-    public String getMonthly(@RequestParam(value = "month", required = false) String month, @RequestParam(value = "day", required = false) String day, @RequestParam (value = "year", required = false) String year, @RequestParam(value = "order", required = false) String order){
+    public String getMonthly(HttpServletRequest request, @RequestParam(value = "month", required = false) String month, @RequestParam(value = "day", required = false) String day, @RequestParam (value = "year", required = false) String year, @RequestParam(value = "order", required = false) String order){
         JSONArray jsonArray = new JSONArray();
 
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(new Date());
 
         HashMap<Integer, String> valueMap = new HashMap<>();
+
+        String school = IndexServlet.schoolForSessionID(request);
+
+        if (school == null) {
+            return "";
+        }
 
         String query = "select * from daily where ";
 
@@ -83,14 +90,24 @@ public class MonthlyRecapServlet {
             predCount++;
         }
 
-        if (month == null && day == null && year == null)
+        if (predCount > 1){
+            query += " and ";
+        }
+
+        query += "school=?";
+
+        valueMap.put(predCount, school);
+
+        predCount++;
+
+        if (month == null && day == null && year == null && school == null)
             query = "select * from daily";
         else query += params.stream().collect(Collectors.joining(" and "));
 
         if(order == null)
             order = "";
 
-        query += (" order by date " + order);
+        query += "ORDER BY date " + order;
 
         try {
 

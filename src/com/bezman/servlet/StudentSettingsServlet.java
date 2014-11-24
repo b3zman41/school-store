@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
@@ -21,9 +22,9 @@ import java.sql.SQLException;
 public class StudentSettingsServlet {
 
     @RequestMapping(value = "/studentsettings", method = {RequestMethod.GET, RequestMethod.POST})
-    public String studentSettings(Model model, HttpServletRequest request){
+    public String studentSettings(Model model, HttpServletRequest request, HttpServletResponse response){
 
-        IndexServlet.servletLoginCheck(model, request);
+        IndexServlet.servletLoginCheck(model, request, response);
 
         return "studentsettings";
     }

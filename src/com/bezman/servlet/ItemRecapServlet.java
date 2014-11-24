@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -25,9 +26,9 @@ import java.util.*;
 public class ItemRecapServlet {
 
     @RequestMapping(value = "/itemrecap", method = {RequestMethod.GET, RequestMethod.POST})
-    public String getItemRecap(Model model, HttpServletRequest request){
+    public String getItemRecap(Model model, HttpServletRequest request, HttpServletResponse response){
 
-        IndexServlet.servletLoginCheck(model, request);
+        IndexServlet.servletLoginCheck(model, request, response);
 
         return "itemrecap";
     }

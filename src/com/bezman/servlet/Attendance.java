@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -64,9 +65,9 @@ public class Attendance {
 
 
     @RequestMapping(value = "/attendance", method = {RequestMethod.GET})
-    public String getAttendance(Model model, HttpServletRequest request, @RequestParam(value = "month", required = false) String month, @RequestParam(value = "day", required = false) String day, @RequestParam(value = "year", required = false) String year) {
+    public String getAttendance(Model model, HttpServletRequest request, HttpServletResponse response, @RequestParam(value = "month", required = false) String month, @RequestParam(value = "day", required = false) String day, @RequestParam(value = "year", required = false) String year) {
 
-        IndexServlet.servletLoginCheck(model, request);
+        IndexServlet.servletLoginCheck(model, request, response);
 
         model.addAttribute("namesJSON", getAttendanceJSON(model, request, month, day, year));
 
