@@ -192,5 +192,16 @@
     });
   });
 </script>
+
+<script type="text/javascript">
+  google_ad_client = "ca-pub-4314299965778964";
+  google_ad_slot = "7278123533";
+  google_ad_width = 728;
+  google_ad_height = 90;
+</script>
+<!-- All Ads -->
+<script type="text/javascript"
+        src="//pagead2.googlesyndication.com/pagead/show_ads.js">
+</script>
 </body>
 </html>

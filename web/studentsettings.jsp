@@ -95,17 +95,17 @@
 <div id="newStudentModal" class="modal fade">
   <div class="modal-dialog">
     <div class="modal-content">
-      <div class="modal-header">
-        Set the student's name
-      </div>
-
       <div class="modal-body">
-        <form class="form-horizontal" role="form">
-          <label class="control-label">Name</label>
-          <input id="newNameInput" class="form-control" type="text">
+        <form class="form" role="form">
+          <div class="form-group" style="padding: 3%;">
+            <label class="control-label">Name</label>
+            <input id="newNameInput" class="form-control" type="text">
+          </div>
 
-          <label class="control-label">Period</label>
-          <input id="newPeriodInput" class="form-control" type="text">
+          <div class="form-group" style="padding: 3%;">
+            <label class="control-label">Period</label>
+            <input id="newPeriodInput" class="form-control" type="text">
+          </div>
         </form>
       </div>
 
@@ -362,6 +362,16 @@
       $("#studentsTBody").append($(tr));
     }
   });
+</script>
+
+<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- All Ads -->
+<ins class="adsbygoogle"
+     style="display:inline-block;width:728px;height:90px"
+     data-ad-client="ca-pub-4314299965778964"
+     data-ad-slot="7278123533"></ins>
+<script>
+  (adsbygoogle = window.adsbygoogle || []).push({});
 </script>
 
 </body>

@@ -1,10 +1,8 @@
 package com.bezman.servlet;
 
-import com.bezman.json.JSON;
 import com.bezman.reference.Reference;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -32,7 +30,28 @@ public class IndexServlet {
 
         IndexServlet.servletLoginCheck(model, request, response);
 
-        model.addAttribute("motd", StringEscapeUtils.escapeHtml(Reference.motd).replace("\n", "<br/>"));
+        String school = IndexServlet.schoolForSessionID(request);
+
+        if (school != null) {
+            try {
+                PreparedStatement statement = IndexServlet.connection.prepareStatement("select * from other where theKey=? and school=?");
+                statement.setString(1, "motd");
+                statement.setString(2, school);
+
+                ResultSet motdSet = statement.executeQuery();
+
+                String motd = "No message today.";
+
+                while (motdSet.next()){
+                    motd = motdSet.getString("value");
+                }
+
+                model.addAttribute("motd", StringEscapeUtils.escapeHtml(motd).replace("\n", "<br/>"));
+
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
 
         return "main";
     }
@@ -143,14 +162,6 @@ public class IndexServlet {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        JSONObject motdJSON = JSON.pullJSONObjectFromFile("motd.json");
-
-        if(motdJSON == null){
-            Reference.motd = "No messages today";
-        }else{
-            Reference.motd = (String) motdJSON.get("message");
-        }
     }
 
     @PreDestroy
@@ -161,12 +172,6 @@ public class IndexServlet {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
-        JSONObject jsonObject = new JSONObject();
-
-        jsonObject.put("message", Reference.motd);
-
-        JSON.putJSONObjectToFile(jsonObject, "motd.json");
     }
 
     public static Cookie getCookie(Cookie[] cookies, String name){

@@ -44,8 +44,9 @@ public class Login {
             if (foundAccount){
                 String sessionID = getRandomSessionID();
 
-                PreparedStatement deleteSessions = IndexServlet.connection.prepareStatement("DELETE from sessions WHERE username=?");
+                PreparedStatement deleteSessions = IndexServlet.connection.prepareStatement("DELETE from sessions WHERE username=? and school=?");
                 deleteSessions.setString(1, username);
+                deleteSessions.setString(2, school);
 
                 deleteSessions.executeUpdate();
 

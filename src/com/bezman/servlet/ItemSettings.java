@@ -30,19 +30,27 @@ public class ItemSettings {
 
         JSONArray jsonArray = new JSONArray();
 
-        try {
-            ResultSet itemSet = IndexServlet.execQuery("select * from items");
+        String school = IndexServlet.schoolForSessionID(request);
 
-            while(itemSet.next()){
-                JSONObject jsonObject = new JSONObject();
+        if (school != null) {
 
-                jsonObject.put("itemName", itemSet.getString("name"));
-                jsonObject.put("priceOfItem", itemSet.getString("price"));
+            try {
+                PreparedStatement statement = IndexServlet.connection.prepareStatement("select * from items WHERE school=? order by name");
+                statement.setString(1, school);
 
-                jsonArray.add(jsonObject);
+                ResultSet itemSet = statement.executeQuery();
+
+                while (itemSet.next()) {
+                    JSONObject jsonObject = new JSONObject();
+
+                    jsonObject.put("itemName", itemSet.getString("name"));
+                    jsonObject.put("priceOfItem", itemSet.getString("price"));
+
+                    jsonArray.add(jsonObject);
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
 
         model.addAttribute("itemNames", StringEscapeUtils.escapeJavaScript(jsonArray.toJSONString()));
@@ -55,12 +63,15 @@ public class ItemSettings {
     public String changeItemName(Model model, HttpServletRequest request, @RequestParam("name") String name, @RequestParam("oldName") String oldName, @RequestParam("price") String price){
         JSONObject jsonObject = new JSONObject();
 
-        if(IndexServlet.isSessionAdmin(IndexServlet.getCookie(request.getCookies(), "sessionID").getValue())){
+        String school = IndexServlet.schoolForSessionID(request);
+
+        if(IndexServlet.isSessionAdmin(IndexServlet.getCookie(request.getCookies(), "sessionID").getValue()) && school != null){
             try {
-                PreparedStatement statement = IndexServlet.connection.prepareStatement("update items set name=?,price=? where name=?");
-                statement.setString(1, name);
+                PreparedStatement statement = IndexServlet.connection.prepareStatement("update items set name=?,price=? where name=? and school=?");
+                statement.setString(1, StringEscapeUtils.escapeHtml(name));
                 statement.setDouble(2, Double.valueOf(price));
-                statement.setString(3, oldName);
+                statement.setString(3, StringEscapeUtils.escapeHtml(oldName));
+                statement.setString(4, school);
 
                 statement.executeUpdate();
                 jsonObject.put("success", "true");
@@ -79,10 +90,13 @@ public class ItemSettings {
     public String deleteItem(Model model, HttpServletRequest request, @RequestParam("name") String name){
         JSONObject jsonObject = new JSONObject();
 
-        if(IndexServlet.isSessionAdmin(IndexServlet.getCookie(request.getCookies(), "sessionID").getValue())){
+        String school = IndexServlet.schoolForSessionID(request);
+
+        if(IndexServlet.isSessionAdmin(IndexServlet.getCookie(request.getCookies(), "sessionID").getValue()) && school != null){
             try {
-                PreparedStatement statement = IndexServlet.connection.prepareStatement("delete from items where name=?");
-                statement.setString(1, name);
+                PreparedStatement statement = IndexServlet.connection.prepareStatement("delete from items where name=? and school=?");
+                statement.setString(1, StringEscapeUtils.escapeHtml(name));
+                statement.setString(2, school);
 
                 statement.executeUpdate();
                 jsonObject.put("success", "true");
@@ -101,11 +115,15 @@ public class ItemSettings {
     public String addItem(Model model, HttpServletRequest request, @RequestParam("name") String name, @RequestParam("price") String price){
         JSONObject jsonObject = new JSONObject();
 
-        if(IndexServlet.isSessionAdmin(IndexServlet.getCookie(request.getCookies(), "sessionID").getValue())){
+        String school = IndexServlet.schoolForSessionID(request);
+        System.out.println(school);
+
+        if(IndexServlet.isSessionAdmin(IndexServlet.getCookie(request.getCookies(), "sessionID").getValue()) && school != null){
             try {
-                PreparedStatement statement = IndexServlet.connection.prepareStatement("insert into items values(?, ?)");
+                PreparedStatement statement = IndexServlet.connection.prepareStatement("insert into items values(?, ?, ?)");
                 statement.setString(1, StringEscapeUtils.escapeHtml(name));
                 statement.setDouble(2, Double.valueOf(price));
+                statement.setString(3, school);
 
                 statement.executeUpdate();
 

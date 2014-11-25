@@ -376,5 +376,15 @@
 
   updateData();
 </script>
+
+<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- All Ads -->
+<ins class="adsbygoogle"
+     style="display:inline-block;width:728px;height:90px"
+     data-ad-client="ca-pub-4314299965778964"
+     data-ad-slot="7278123533"></ins>
+<script>
+  (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
 </body>
 </html>

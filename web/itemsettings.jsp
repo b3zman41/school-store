@@ -166,15 +166,19 @@
       </div>
 
       <div class="modal-body">
-        <label class="control-label">Item Name</label>
-        <input id="addItemNameInput" class="form-control" type="text">
+        <div class="form-group" style="padding: 3%;">
+          <label class="control-label">Item Name</label>
+          <input id="addItemNameInput" class="form-control" type="text">
+        </div>
 
-        <label class="control-label">Price of Item</label>
-        <input id="addItemPriceInput" type="number" class="form-control">
+        <div class="form-group" style="padding: 3%;">
+          <label class="control-label">Price of Item</label>
+          <input id="addItemPriceInput" type="number" class="form-control">
+        </div>
       </div>
 
       <div class="modal-footer" style="text-align: center">
-        <button id="addItemNameInputButton" type="button" class="btn btn-primary">Add!</button>
+        <button id="addItemNameInputButton" type="button" class="btn btn-primary">Add</button>
         <button type="button" class="btn btn-default" onclick="$('#addItemModal').modal('hide')">Cancel</button>
       </div>
     </div>
@@ -362,6 +366,16 @@
       });
     }
   });
+</script>
+
+<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- All Ads -->
+<ins class="adsbygoogle"
+     style="display:inline-block;width:728px;height:90px"
+     data-ad-client="ca-pub-4314299965778964"
+     data-ad-slot="7278123533"></ins>
+<script>
+  (adsbygoogle = window.adsbygoogle || []).push({});
 </script>
 </body>
 </html>

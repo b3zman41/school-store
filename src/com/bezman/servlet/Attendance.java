@@ -45,21 +45,25 @@ public class Attendance {
 
         System.out.println(month + "/ " + day + "/ " + year);
 
-        try {
-            PreparedStatement statement = IndexServlet.connection.prepareStatement("select * from daily where MONTH(date)=? and DAY(date)=? and YEAR(date)=? order by period");
-            statement.setString(1, month);
-            statement.setString(2, day);
-            statement.setString(3, year);
+        String school = IndexServlet.schoolForSessionID(request);
 
-            ResultSet resultSet = statement.executeQuery();
+        if (school != null) {
+            try {
+                PreparedStatement statement = IndexServlet.connection.prepareStatement("select * from daily where MONTH(date)=? and DAY(date)=? and YEAR(date)=? and school=? order by period");
+                statement.setString(1, month);
+                statement.setString(2, day);
+                statement.setString(3, year);
+                statement.setString(4, school);
 
-            while(resultSet.next()){
-                jsonArray.add(resultSet.getString("names") + ";" + resultSet.getString("period"));
+                ResultSet resultSet = statement.executeQuery();
+
+                while (resultSet.next()) {
+                    jsonArray.add(resultSet.getString("names") + ";" + resultSet.getString("period"));
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
-
         return jsonArray.toJSONString();
     }
 

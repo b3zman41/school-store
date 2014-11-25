@@ -260,7 +260,7 @@
         numOfItemsTD.style.textAlign = "center";
 
         var totalCashTD = document.createElement("td");
-        totalCashTD.innerHTML = "$" + json[i].totalCash;
+        totalCashTD.innerHTML = "$" + parseFloat(json[i].totalCash).toFixed(2);
         totalCashTD.style.textAlign = "center";
 
         var tr = document.createElement("tr");
@@ -286,7 +286,7 @@
       var newestDate = new Date(newest);
 
       $("#totalItemsCount").html(itemsSum);
-      $("#totalCashCount").html("$"+ totalCash);
+      $("#totalCashCount").html("$"+ totalCash.toFixed(2));
 
       $("#dateSpanLabel").html(oldestDate.toDateString() + " - " + newestDate.toDateString());
     });
@@ -304,6 +304,16 @@
   setDateToToday();
 
   updateData();
+</script>
+
+<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- All Ads -->
+<ins class="adsbygoogle"
+     style="display:inline-block;width:728px;height:90px"
+     data-ad-client="ca-pub-4314299965778964"
+     data-ad-slot="7278123533"></ins>
+<script>
+  (adsbygoogle = window.adsbygoogle || []).push({});
 </script>
 </body>
 </html>

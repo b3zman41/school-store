@@ -122,7 +122,10 @@ public class DailySubmission {
 
         ResultSet salesSet = statement.executeQuery();
 
+        System.out.println(statement);
+
         while(salesSet.next()){
+            System.out.println(salesSet.getString("sale"));
             sales += salesSet.getString("sale") + ",";
         }
 

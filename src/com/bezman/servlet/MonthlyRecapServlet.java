@@ -122,6 +122,7 @@ public class MonthlyRecapServlet {
             ResultSet resultSet = statement.executeQuery();
 
             while(resultSet.next()){
+                System.out.println("Getting Submission");
                 DailySubmission submission = DailySubmission.submissionFromRow(resultSet);
 
                 jsonArray.add(submission.toJson());
