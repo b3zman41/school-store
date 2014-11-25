@@ -641,24 +641,29 @@
     console.log(startSum + totalSalesCash + ", " + endSum);
 
     if(endSum < startSum) {
-      sweetAlert("Error", "You have less money than you started with! Please revise the form.", "error");
-    }else if((startSum + totalSalesCash).toFixed(2) !== endSum.toFixed(2)) {
-      sweetAlert("Error", "Your sales do not add up to the ending sum! Please revise the form.", "error");
-    }else if(startSum > 0 & endSum > 0 && names !== "" && period) {
-      $.get(url, null, function (data) {
-        var json = $.parseJSON(data);
+      sweetAlert({
+        title: "Warning!",
+        text: "You have more money than when you started. Revise or Continue!",
+        type: "warning",
 
-        if (json.success === "true")
-          sweetAlert({
-            title: "Good Job!",
-            text: "You entered the whole form correctly!",
-            type: "success"
-          }, function(){
-            window.location = ("http://ss.bezcode.com");
-          });
-
-        console.log(json);
+        showCancelButton: true,
+        closeOnConfirm: false
+      }, function () {
+        readyToSubmit(url);
       });
+    }else if((startSum + totalSalesCash).toFixed(2) !== endSum.toFixed(2)) {
+      sweetAlert({
+        title: "Warning!",
+        text: "Your sales do not add up to the ending sum. Revise or Continue!",
+        type: "warning",
+
+        showCancelButton: true,
+        closeOnConfirm: false
+      }, function () {
+          readyToSubmit(url);
+      });
+    }else if(startSum > 0 & endSum > 0 && names !== "" && period) {
+      readyToSubmit(url);
     }else{
       sweetAlert({
         title: "Error",
@@ -666,6 +671,23 @@
         type: "error"
       });
     }
+  }
+
+  function readyToSubmit(url){
+    $.get(url, null, function (data) {
+      var json = $.parseJSON(data);
+
+      if (json.success === "true")
+        sweetAlert({
+          title: "Good Job!",
+          text: "You entered the whole form correctly!",
+          type: "success"
+        }, function(){
+          window.location = ("http://ss.bezcode.com");
+        });
+
+      console.log(json);
+    });
   }
 
   function getSaleNode(){

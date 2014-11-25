@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.sql.PreparedStatement;
@@ -44,22 +43,22 @@ public class SubmitDaily {
         }
 
         Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("America/New_York"));
-        Timestamp timestamp = new Timestamp(calendar.getTime().getTime());
+        Timestamp timestamp = new Timestamp((calendar.getTime().getTime() / 1000) * 1000);
 
         String columnNames = (String) keyMap.values().stream().collect(Collectors.joining(", "));
 
         ArrayList questionMarks = new ArrayList();
         IntStream.range(0, allParams.size()).forEach(a -> questionMarks.add("?"));
 
-        Cookie schoolCookie = IndexServlet.getCookie(request.getCookies(), "school");
+        String school = IndexServlet.schoolForSessionID(request);
 
         try {
 
-            if (schoolCookie == null) {
+            if (school == null) {
                 throw new SQLException("Missing an important cookie!");
             }
 
-            String school = schoolCookie.getValue();
+            System.out.println(school + ", timestamp: " + timestamp);
 
             String query = "insert into daily (date, school, " + columnNames + ") VALUES('" + timestamp + "','" + school + "', " + questionMarks.stream().collect(Collectors.joining(", ")) + ")";
 
@@ -85,6 +84,8 @@ public class SubmitDaily {
                     salesStatement.setTimestamp(1, timestamp);
                     salesStatement.setString(2, currentSale);
                     salesStatement.setString(3, school);
+
+                    System.out.println("Sales Statement: " + salesStatement);
 
                     salesStatement.executeUpdate();
                 }
