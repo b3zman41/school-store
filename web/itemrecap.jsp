@@ -273,12 +273,15 @@
         itemsSum += json[i].numOfItems;
         totalCash += parseFloat(json[i].totalCash);
 
+        console.log(json[i].date);
+
         if(!oldest && !newest)
           oldest = newest = json[i].date;
 
         if(json[i].date < oldest)
           oldest = json[i].date;
-        else if(json[i] > newest)
+
+        if(json[i].date > newest)
           newest = json[i].date;
       }
 

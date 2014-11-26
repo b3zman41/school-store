@@ -107,6 +107,8 @@ public class ItemRecapServlet {
 
                 ResultSet resultSet = statement.executeQuery();
 
+                int totalNumOfItems = 0;
+
                 while (resultSet.next()) {
                     String sale = resultSet.getString("sale");
                     String[] saleSplit = sale.split(";");
@@ -118,21 +120,26 @@ public class ItemRecapServlet {
                         Integer numOfItems = Integer.valueOf(saleSplit[1]);
                         Double priceOfItem = Double.valueOf(saleSplit[2]);
 
-                        System.out.println("Item name : " + itemName + ", numOfItems : " + numOfItems + ", Price : " + priceOfItem);
+                        System.out.println(timestamp + ", " + numOfItems + ", " + priceOfItem);
 
                         if (itemName != null && numOfItems != null && priceOfItem != null) {
+
+                            System.out.println("good to go");
+
                             ItemSale itemSale = new ItemSale(itemName, numOfItems);
                             itemSale.setDate(timestamp);
 
                             boolean foundOne = false;
 
+                            totalNumOfItems += numOfItems;
+
                             for (ItemSale item : items) {
                                 if (item.itemName.equals(itemSale.itemName)) {
+
                                     item.numOfItems += itemSale.numOfItems;
                                     item.totalCash += (numOfItems.doubleValue() * priceOfItem.doubleValue());
 
-                                    System.out.println("Num of Items : " + numOfItems + ", price: " + priceOfItem);
-                                    System.out.println(numOfItems * priceOfItem);
+                                    System.out.println("Already found one\n");
 
                                     foundOne = true;
                                 }
@@ -141,11 +148,15 @@ public class ItemRecapServlet {
                             if (!foundOne) {
                                 itemSale.totalCash = numOfItems * priceOfItem;
                                 items.add(itemSale);
+
+                                System.out.println("Adding it to the array for the first time\n");
                             }
 
-                        }
+                        }else System.out.println("null");
                     }
                 }
+
+                System.out.println("Total num : " + totalNumOfItems);
 
                 for (ItemSale item : items) {
                     JSONObject jsonObject = new JSONObject();
@@ -156,7 +167,6 @@ public class ItemRecapServlet {
                     jsonObject.put("date", item.timestamp.getTime());
 
                     jsonArray.add(jsonObject);
-                    ;
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
