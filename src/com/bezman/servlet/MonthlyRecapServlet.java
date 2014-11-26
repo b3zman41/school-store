@@ -107,7 +107,7 @@ public class MonthlyRecapServlet {
         if(order == null)
             order = "";
 
-        query += "ORDER BY date " + order;
+        query += "ORDER BY date " + order + " limit 50";
 
         try {
 
